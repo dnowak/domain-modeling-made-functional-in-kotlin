@@ -89,8 +89,23 @@ fun validateRegExp(pattern: String, value: String): Validated<ValidationError, S
         Invalid(ValidationError("'$value' must match the pattern '$pattern'"))
     }
 
+fun validateStringLength(min: Int, max: Int, value: String): Validated<ValidationError, String> {
+    val length = value.length
+    return if ((length >= min) && (length <= max)) {
+        Valid(value)
+    } else {
+        Invalid(ValidationError("The length of <$value> should be between <$min> and <$max>"))
+    }
+}
+
 fun validateEmail(email: String): ValidatedNel<ValidationError, EmailAddress> =
     validateRegExp(".+@.+", email).bimap(::nonEmptyListOf, ::EmailAddress)
 
 fun validateZipCode(zip: String): ValidatedNel<ValidationError, ZipCode> =
     validateRegExp("\\d{5}", zip).bimap(::nonEmptyListOf, ::ZipCode)
+
+fun validateOrderId(id: String): ValidatedNel<ValidationError, OrderId> =
+    validateStringLength(1, 10, id).bimap(::nonEmptyListOf, ::OrderId)
+
+fun validateOrderLineId(id: String): ValidatedNel<ValidationError, OrderLineId> =
+    validateStringLength(1, 10, id).bimap(::nonEmptyListOf, ::OrderLineId)
