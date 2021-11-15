@@ -45,7 +45,7 @@ application {
 tasks.test {
     kover {
         enabled = true
-        includes = ['com\\.worldremit\\..*']
+        includes = ['com\\.dnowak\\..*']
     }
 }
 
