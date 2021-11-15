@@ -1,4 +1,4 @@
-package com.dnowak.order.common
+package com.dnowak.order.taking.common
 
 import arrow.core.*
 import java.math.BigDecimal
