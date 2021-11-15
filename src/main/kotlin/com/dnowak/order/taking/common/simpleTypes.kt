@@ -69,8 +69,8 @@ type ProductCode =
 | Gizmo of GizmoCode
  */
 sealed class ProductCode {
-    data class Widget(val value: WidgetCode) : ProductCode()
-    data class Gizmo(val value: GizmoCode) : ProductCode()
+    data class Widget(val code: WidgetCode) : ProductCode()
+    data class Gizmo(val code: GizmoCode) : ProductCode()
 }
 
 /// Constrained to be a integer between 1 and 1000
@@ -159,6 +159,18 @@ fun validateStringLength(min: Int, max: Int, value: String): Validated<Validatio
         Valid(value)
     } else {
         Invalid(ValidationError("The length of <$value> should be between <$min> and <$max>"))
+    }
+}
+
+fun validateNullableStringLength(min: Int, max: Int, value: String?): Validated<ValidationError, String?> {
+    if (value == null) {
+        return value.valid()
+    }
+    val length = value.length
+    return if ((length >= min) && (length <= max)) {
+        Valid(value)
+    } else {
+        Invalid(ValidationError("The <$value> should be <null> or its length should be between <$min> and <$max>"))
     }
 }
 

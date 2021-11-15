@@ -33,7 +33,7 @@ type CustomerInfo = {
 
 data class CustomerInfo(
     val name: PersonalName,
-    val emailAddress: EmailAddress
+    val emailAddress: EmailAddress,
 )
 
 // ==================================
@@ -51,12 +51,14 @@ type Address = {
 }
  */
 
+data class City(val value: String)
+
 data class Address(
     val addressLine1: String,
     val addressLine2: String?,
     val addressLine3: String?,
     val addressLine4: String?,
-    val city: String,
+    val city: City,
     val zipCode: ZipCode
 )
 
