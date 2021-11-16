@@ -65,40 +65,35 @@ result {
     let info = { Name = name; EmailAddress = email; VipStatus = vipStatus }
     return info
 }
- */
+*/
 
-data class Element(val value: String)
+data class Property(val value: String)
 
-data class NestedValidationError(
-    val path: Nel<Element>,
-    val error: ValidationError
+data class PropertyValidationError(
+    val path: Nel<Property>,
+    val message: String,
 )
 
 private val validateString50 = ::validateStringLength.partially1(1).partially1(50)
 private val validateNullableString50 = ::validateNullableStringLength.partially1(1).partially1(50)
 
-fun <V> Validated<ValidationError, V>.nested(element: String): ValidatedNel<NestedValidationError, V> = this
-    .mapLeft { error -> NestedValidationError(nonEmptyListOf(Element(element)), error) }
+fun <V> Validated<ValidationError, V>.assign(property: Property): ValidatedNel<PropertyValidationError, V> = this
+    .mapLeft { error -> PropertyValidationError(nonEmptyListOf(property), error.message) }
     .mapLeft(::nonEmptyListOf)
 
 @JvmName("nestedValidationErrorV")
-fun <V> ValidatedNel<ValidationError, V>.nested(element: String): ValidatedNel<NestedValidationError, V> = this
+fun <V> ValidatedNel<ValidationError, V>.assign(property: Property): ValidatedNel<PropertyValidationError, V> = this
     .mapLeft { errors ->
-        errors.map { error ->
-            NestedValidationError(
-                nonEmptyListOf(Element(element)),
-                error
-            )
-        }
+        errors.map { error -> PropertyValidationError(nonEmptyListOf(property), error.message) }
     }
 
-fun toCustomerInfo(dto: CustomerInfoDto): ValidatedNel<NestedValidationError, CustomerInfo> {
+fun toCustomerInfo(dto: CustomerInfoDto): ValidatedNel<PropertyValidationError, CustomerInfo> {
     val validatedFirstName = validateString50(dto.firstName)
-        .nested("firstName")
+        .assign(Property("firstName"))
     val validatedLastName = validateString50(dto.lastName)
-        .nested("lastName")
+        .assign(Property("lastName"))
     val validatedEmailAddress = EmailAddress.validate(dto.emailAddress)
-        .nested("emailAddress")
+        .assign(Property("emailAddress"))
 
     return validatedFirstName.zip(
         validatedLastName,
@@ -217,22 +212,22 @@ result {
     }
     return address
 }
- */
+*/
 
-fun toAddress(dto: AddressDto): ValidatedNel<NestedValidationError, Address> {
+fun toAddress(dto: AddressDto): ValidatedNel<PropertyValidationError, Address> {
     val validatedLine1 = validateString50(dto.addressLine1)
-        .nested("addressLine1")
+        .assign(Property("addressLine1"))
     val validatedLine2 = validateNullableString50(dto.addressLine2)
-        .nested("addressLine2")
+        .assign(Property("addressLine2"))
     val validatedLine3 = validateNullableString50(dto.addressLine3)
-        .nested("addressLine3")
+        .assign(Property("addressLine3"))
     val validatedLine4 = validateNullableString50(dto.addressLine4)
-        .nested("addressLine4")
+        .assign(Property("addressLine4"))
     val validatedCity = validateString50(dto.city)
         .map(::City)
-        .nested("city")
+        .assign(Property("city"))
     val validatedZipCode = ZipCode.validate(dto.zipCode)
-        .nested("zipCode")
+        .assign(Property("zipCode"))
 
     return validatedLine1.zip(
         validatedLine2,
@@ -279,7 +274,7 @@ type OrderFormLineDto =  {
 }
 */
 
-data class OrderLineDto(
+data class OrderFormLineDto(
     val orderLineId: String,
     val productCode: String,
     //TODO: Is it a correct type?
@@ -302,7 +297,7 @@ let toUnvalidatedOrderLine (dto:OrderFormLineDto) :UnvalidatedOrderLine =
 }
 */
 
-fun toUnvalidatedOrderLine(dto: OrderLineDto): UnvalidatedOrderLine = dto.run {
+fun toUnvalidatedOrderLine(dto: OrderFormLineDto): UnvalidatedOrderLine = dto.run {
     UnvalidatedOrderLine(orderLineId, productCode, quantity)
 }
 
@@ -361,7 +356,6 @@ fun fromDomain(line: PricedOrderLine): PricedOrderLineDto = line.run {
 // DTO for OrderForm
 //===============================================
 /*
-
 type OrderFormDto = {
     OrderId : string
     CustomerInfo : CustomerInfoDto
@@ -369,12 +363,22 @@ type OrderFormDto = {
     BillingAddress : AddressDto
     Lines : OrderFormLineDto list
 }
+*/
+
+data class OrderFormDto(
+    val orderId: String,
+    val customerInfo: CustomerInfoDto,
+    val shippingAddress: AddressDto,
+    val billingAddress: AddressDto,
+    val lines: List<OrderFormLineDto>,
+)
 
 /// Functions relating to the Order DTOs
-module internal OrderFormDto =
+//module internal OrderFormDto =
 
 /// Convert the OrderForm into a UnvalidatedOrder
 /// This always succeeds because there is no validation.
+/*
 let toUnvalidatedOrder (dto:OrderFormDto) :UnvalidatedOrder =
 {
     OrderId = dto.OrderId
@@ -383,14 +387,24 @@ let toUnvalidatedOrder (dto:OrderFormDto) :UnvalidatedOrder =
     BillingAddress = dto.BillingAddress |> AddressDto.toUnvalidatedAddress
     Lines = dto.Lines |> List.map OrderLineDto.toUnvalidatedOrderLine
 }
+*/
 
+fun toUnvalidatedOrder(dto: OrderFormDto): UnvalidatedOrder = dto.run {
+    UnvalidatedOrder(
+        orderId = orderId,
+        customerInfo = toUnvalidatedCustomerInfo(customerInfo),
+        shippingAddress = toUnvalidatedAddress(shippingAddress),
+        billingAddress = toUnvalidatedAddress(billingAddress),
+        lines = lines.map(::toUnvalidatedOrderLine),
+    )
+}
 
 //===============================================
 // DTO for OrderPlaced event
 //===============================================
 
-
 /// Event to send to shipping context
+/*
 type OrderPlacedDto = {
     OrderId : string
     CustomerInfo : CustomerInfoDto
@@ -399,11 +413,22 @@ type OrderPlacedDto = {
     AmountToBill : decimal
     Lines : PricedOrderLineDto list
 }
+*/
 
-module internal OrderPlacedDto =
+data class OrderPlacedDto(
+    val orderId: String,
+    val customerInfo: CustomerInfoDto,
+    val shippingAddress: AddressDto,
+    val billingAddress: AddressDto,
+    val amountToBill: BigDecimal,
+    val lines: List<PricedOrderLineDto>,
+)
+
+//module internal OrderPlacedDto =
 
 /// Convert a OrderPlaced object into the corresponding DTO.
 /// Used when exporting from the domain to the outside world.
+/*
 let fromDomain (domainObj:OrderPlaced) :OrderPlacedDto =
 {
     OrderId = domainObj.OrderId |> OrderId.value
@@ -413,28 +438,58 @@ let fromDomain (domainObj:OrderPlaced) :OrderPlacedDto =
     AmountToBill = domainObj.AmountToBill |> BillingAmount.value
     Lines = domainObj.Lines |> List.map PricedOrderLineDto.fromDomain
 }
+*/
+
+fun fromDomain(order: OrderPlaced): OrderPlacedDto = order.run {
+    OrderPlacedDto(
+        orderId = orderId.value,
+        customerInfo = fromCustomerInfo(customerInfo),
+        shippingAddress = fromAddress(shippingAddress),
+        billingAddress = fromAddress(billingAddress),
+        amountToBill = amountToBill.value,
+        lines = lines.map(::fromDomain),
+    )
+}
 
 //===============================================
 // DTO for BillableOrderPlaced event
 //===============================================
 
 /// Event to send to billing context
+/*
 type BillableOrderPlacedDto = {
     OrderId : string
     BillingAddress: AddressDto
     AmountToBill : decimal
 }
+*/
+
+data class BillableOrderPlacedDto(
+    val orderId: String,
+    val billingAddress: AddressDto,
+    val amountToBill: BigDecimal
+)
 
 
-module internal BillableOrderPlacedDto =
+//module internal BillableOrderPlacedDto =
 
 /// Convert a BillableOrderPlaced object into the corresponding DTO.
 /// Used when exporting from the domain to the outside world.
+/*
 let fromDomain (domainObj:BillableOrderPlaced ) :BillableOrderPlacedDto =
 {
     OrderId = domainObj.OrderId |> OrderId.value
     BillingAddress = domainObj.BillingAddress |> AddressDto.fromAddress
     AmountToBill = domainObj.AmountToBill |> BillingAmount.value
+}
+*/
+
+fun fromDomain(event: BillableOrderPlaced): BillableOrderPlacedDto = event.run {
+    BillableOrderPlacedDto(
+        orderId = orderId.value,
+        billingAddress = fromAddress(billingAddress),
+        amountToBill = amountToBill.value,
+    )
 }
 
 //===============================================
@@ -442,20 +497,35 @@ let fromDomain (domainObj:BillableOrderPlaced ) :BillableOrderPlacedDto =
 //===============================================
 
 /// Event to send to other bounded contexts
+/*
 type OrderAcknowledgmentSentDto = {
     OrderId : string
     EmailAddress : string
 }
+*/
 
+data class OrderAcknowledgmentSentDto(
+    val orderId: String,
+    val emailAddress: String,
+)
 
-module internal OrderAcknowledgmentSentDto =
+//module internal OrderAcknowledgmentSentDto =
 
 /// Convert a OrderAcknowledgmentSent object into the corresponding DTO.
 /// Used when exporting from the domain to the outside world.
+/*
 let fromDomain (domainObj:OrderAcknowledgmentSent) :OrderAcknowledgmentSentDto =
 {
     OrderId = domainObj.OrderId |> OrderId.value
     EmailAddress = domainObj.EmailAddress |> EmailAddress.value
+}
+*/
+
+fun fromDomain(event: OrderAcknowledmentSent): OrderAcknowledgmentSentDto = event.run {
+    OrderAcknowledgmentSentDto(
+        orderId = orderId.value,
+        emailAddress = emailAddress.value,
+    )
 }
 
 //===============================================
@@ -464,12 +534,15 @@ let fromDomain (domainObj:OrderAcknowledgmentSent) :OrderAcknowledgmentSentDto =
 
 /// Use a dictionary representation of a PlaceOrderEvent, suitable for JSON
 /// See "Serializing Records and Choice Types Using Maps" in chapter 11
-type PlaceOrderEventDto = IDictionary<string,obj>
+//type PlaceOrderEventDto = IDictionary<string,obj>
 
-module internal PlaceOrderEventDto =
+typealias PlaceOrderEventDto = Map<String, Any>
+
+//module internal PlaceOrderEventDto =
 
 /// Convert a PlaceOrderEvent into the corresponding DTO.
 /// Used when exporting from the domain to the outside world.
+/*
 let fromDomain (domainObj:PlaceOrderEvent) :PlaceOrderEventDto =
 match domainObj with
 | OrderPlaced orderPlaced ->
@@ -484,18 +557,43 @@ let key = "BillableOrderPlaced"
 let obj = orderAcknowledgmentSent |> OrderAcknowledgmentSentDto.fromDomain |> box
 let key = "OrderAcknowledgmentSent"
 [(key,obj)] |> dict
+*/
+
+fun fromDomain(event: PlaceOrderEvent): PlaceOrderEventDto = when (event) {
+    is PlaceOrderEvent.OrderPlaced -> mapOf("OrderPlaced" to fromDomain(event.payload))
+    is PlaceOrderEvent.BillableOrderPlaced -> mapOf("BillableOrderPlaced" to fromDomain(event.payload))
+    is PlaceOrderEvent.AcknowledgmentSent -> mapOf("OrderAcknowledgementSent" to fromDomain(event.payload))
+}
 
 //===============================================
 // DTO for PlaceOrderError
 //===============================================
-
+/*
 type PlaceOrderErrorDto = {
     Code : string
     Message : string
 }
+*/
 
-module internal PlaceOrderErrorDto =
+data class PropertyValidationErrorDto(
+    val path: String,
+    val message: String,
+)
 
+fun fromDomain(error: PropertyValidationError): PropertyValidationErrorDto {
+    val path = error.path.map(Property::value).joinToString(separator = "/")
+    return PropertyValidationErrorDto(path, error.message)
+}
+
+data class PlaceOrderErrorDto(
+    val code: String,
+    val message: String,
+    val validationErrors: List<PropertyValidationErrorDto>? = null
+)
+
+//module internal PlaceOrderErrorDto =
+
+/*
 let fromDomain (domainObj:PlaceOrderError ) :PlaceOrderErrorDto =
 match domainObj with
 | Validation validationError ->
@@ -516,8 +614,12 @@ let msg = sprintf "%s: %s" remoteServiceError.Service.Name remoteServiceError.Ex
     Code = "RemoteServiceError"
     Message = msg
 }
-
 */
 
-
-
+fun fromDomain(error: PlaceOrderError): PlaceOrderErrorDto = when (error) {
+    is PlaceOrderError.Pricing -> PlaceOrderErrorDto("PricingError", error.error.message)
+    is PlaceOrderError.RemoteService ->
+        PlaceOrderErrorDto("RemoteServiceError", "${error.error.service}: ${error.error.exception}")
+    is PlaceOrderError.Validation ->
+        PlaceOrderErrorDto("ValidationError", "Validation errors", error.errors.map(::fromDomain))
+}

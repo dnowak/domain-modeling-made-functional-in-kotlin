@@ -1,6 +1,7 @@
 package com.dnowak.order.taking.place.order
 
 import arrow.core.Either
+import arrow.core.Nel
 import com.dnowak.order.taking.common.*
 import java.lang.Exception
 import java.math.BigDecimal
@@ -72,7 +73,7 @@ type UnvalidatedOrder = {
 }
  */
 
-data class UncalidatedOrder(
+data class UnvalidatedOrder(
     val orderId:String,
     val customerInfo: UnvalidatedCustomerInfo,
     val shippingAddress: UnvalidatedAddress,
@@ -166,7 +167,7 @@ type PlaceOrderEvent =
 sealed class PlaceOrderEvent {
     data class OrderPlaced(val payload: com.dnowak.order.taking.place.order.OrderPlaced): PlaceOrderEvent()
     data class BillableOrderPlaced(val payload: com.dnowak.order.taking.place.order.BillableOrderPlaced): PlaceOrderEvent()
-    data class AcknowledgmentSent(val payload: OrderAcknowledmentSent)
+    data class AcknowledgmentSent(val payload: OrderAcknowledmentSent): PlaceOrderEvent()
 }
 
 
@@ -213,7 +214,7 @@ type PlaceOrderError =
  */
 
 sealed class PlaceOrderError {
-    data class Validation(val error: ValidationError): PlaceOrderError()
+    data class Validation(val errors: Nel<PropertyValidationError>): PlaceOrderError()
     data class Pricing(val error: PricingError): PlaceOrderError()
     data class RemoteService(val error: RemoteServiceError): PlaceOrderError()
 }
@@ -227,5 +228,5 @@ type PlaceOrder =
 UnvalidatedOrder -> AsyncResult<PlaceOrderEvent list,PlaceOrderError>
  */
 
-typealias PlaceOrder = suspend (UncalidatedOrder) -> Either<PlaceOrderError, List<PlaceOrderEvent>>
+typealias PlaceOrder = suspend (UnvalidatedOrder) -> Either<PlaceOrderError, List<PlaceOrderEvent>>
 
