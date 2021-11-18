@@ -4,7 +4,6 @@ import arrow.core.*
 import arrow.core.computations.either
 import com.dnowak.order.taking.common.*
 import com.dnowak.order.taking.place.order.*
-import java.awt.desktop.OpenFilesEvent
 import java.math.BigDecimal
 
 // ======================================================
@@ -98,7 +97,7 @@ CheckProductCodeExists  // dependency
 */
 
 //CHANGE: dropped dependencies from type definition, validation result
-typealias ValidateOrder = suspend (UnvalidatedOrder) -> ValidatedNel<PropertyValidationError, ValidatedOrder>
+typealias ValidateOrder = (UnvalidatedOrder) -> ValidatedNel<PropertyValidationError, ValidatedOrder>
 
 // ---------------------------
 // Pricing step
@@ -212,7 +211,9 @@ result {
 }
  */
 
-fun toCustomerInfo(info: UnvalidatedCustomerInfo): ValidatedNel<PropertyValidationError, CustomerInfo> {
+typealias ValidateCustomerInfo = (UnvalidatedCustomerInfo) -> ValidatedNel<PropertyValidationError, CustomerInfo>
+
+fun validateCustomerInfo(info: UnvalidatedCustomerInfo): ValidatedNel<PropertyValidationError, CustomerInfo> {
     val validatedFirstName = validateString50(info.firstName)
         .assign(Property("firstName"))
     val validatedLastName = validateString50(info.lastName)
@@ -263,14 +264,16 @@ result {
 }
 */
 
-fun toAddress(address: CheckedAddress): ValidatedNel<PropertyValidationError, Address> {
+typealias ValidateAddress = (UnvalidatedAddress) -> ValidatedNel<PropertyValidationError, Address>
+
+fun validateAddress(address: CheckedAddress): ValidatedNel<PropertyValidationError, Address> {
     val validatedAddresLine1 = validateString50(address.addressLine1)
         .assign(Property("addressLine1"))
-    val validatedAddresLine2 = validateNullableString50(address.addressLine2)
+    val validatedAddressLine2 = validateNullableString50(address.addressLine2)
         .assign(Property("addressLine2"))
-    val validatedAddresLine3 = validateNullableString50(address.addressLine3)
+    val validatedAddressLine3 = validateNullableString50(address.addressLine3)
         .assign(Property("addressLine3"))
-    val validatedAddresLine4 = validateNullableString50(address.addressLine4)
+    val validatedAddressLine4 = validateNullableString50(address.addressLine4)
         .assign(Property("addressLine4"))
     val validatedCity = validateString50(address.city).map(::City)
         .assign(Property("city"))
@@ -278,9 +281,9 @@ fun toAddress(address: CheckedAddress): ValidatedNel<PropertyValidationError, Ad
         .assign(Property("zipCode"))
 
     return validatedAddresLine1.zip(
-        validatedAddresLine2,
-        validatedAddresLine3,
-        validatedAddresLine4,
+        validatedAddressLine2,
+        validatedAddressLine3,
+        validatedAddressLine4,
         validatedCity,
         validatedZipCode
     ) { addressLine1, addressLine2, addressLine3, addressLine4, city, zipCode ->
@@ -389,7 +392,9 @@ result {
 }
 */
 
-fun toValidatedOrderLine(
+typealias ValidateOrderLine = (UnvalidatedOrderLine) -> ValidatedNel<PropertyValidationError, ValidatedOrderLine>
+
+fun validateOrderLine(
     line: UnvalidatedOrderLine
 ): ValidatedNel<PropertyValidationError, ValidatedOrderLine> {
     val validatedOrderLineId = OrderLineId.validate(line.orderLineId)
@@ -458,17 +463,22 @@ asyncResult {
 }
 */
 
-fun validateOrder(order: UnvalidatedOrder): ValidatedNel<PropertyValidationError, ValidatedOrder> {
+fun validateOrder(
+    validateCustomerInfo: ValidateCustomerInfo,
+    validateAddress: ValidateAddress,
+    validateOrderLine: ValidateOrderLine,
+    order: UnvalidatedOrder
+): ValidatedNel<PropertyValidationError, ValidatedOrder> {
     val validatedOrderId = OrderId.validate(order.orderId)
         .assign(Property("orderId"))
-    val validatedCustomerInfo = toCustomerInfo(order.customerInfo)
+    val validatedCustomerInfo = validateCustomerInfo(order.customerInfo)
         .prepend(Property("customerInfo"))
-    val validatedShippingAddress = toAddress(order.shippingAddress)
+    val validatedShippingAddress = validateAddress(order.shippingAddress)
         .prepend(Property("shippingAddress"))
-    val validatedBillingAddress = toAddress(order.billingAddress)
+    val validatedBillingAddress = validateAddress(order.billingAddress)
         .prepend(Property("billingAddress"))
     val validatedLines = order.lines.mapIndexed { index, line ->
-        toValidatedOrderLine(line)
+        validateOrderLine(line)
             .prepend(Property("lines[$index]"))
     }.traverseValidated { it }
 
