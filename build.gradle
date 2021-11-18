@@ -77,3 +77,13 @@ kover {
     coverageEngine.set(kotlinx.kover.api.CoverageEngine.INTELLIJ) // change instrumentation agent and reporter
     generateReportOnCheck.set(true)         // false to do not execute `koverReport` task before `check` task
 }
+
+tasks.koverVerify {
+    rule {
+        name = "Minimal line coverage rate in percents"
+        bound {
+            minValue = 50
+            // valueType is 'COVERED_LINES_PERCENTAGE' by default
+        }
+    }
+}
