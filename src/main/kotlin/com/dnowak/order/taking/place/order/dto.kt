@@ -67,26 +67,6 @@ result {
 }
 */
 
-data class Property(val value: String)
-
-data class PropertyValidationError(
-    val path: Nel<Property>,
-    val message: String,
-)
-
-private val validateString50 = ::validateStringLength.partially1(1).partially1(50)
-private val validateNullableString50 = ::validateNullableStringLength.partially1(1).partially1(50)
-
-fun <V> Validated<ValidationError, V>.assign(property: Property): ValidatedNel<PropertyValidationError, V> = this
-    .mapLeft { error -> PropertyValidationError(nonEmptyListOf(property), error.message) }
-    .mapLeft(::nonEmptyListOf)
-
-@JvmName("nestedValidationErrorV")
-fun <V> ValidatedNel<ValidationError, V>.assign(property: Property): ValidatedNel<PropertyValidationError, V> = this
-    .mapLeft { errors ->
-        errors.map { error -> PropertyValidationError(nonEmptyListOf(property), error.message) }
-    }
-
 fun toCustomerInfo(dto: CustomerInfoDto): ValidatedNel<PropertyValidationError, CustomerInfo> {
     val validatedFirstName = validateString50(dto.firstName)
         .assign(Property("firstName"))

@@ -20,6 +20,9 @@ internal class SimpleTypesTest : DescribeSpec({
                     .shouldBeInvalid().all.shouldExist { error -> error.message.contains(email) }
             }
         }
+        it("checks equality") {
+            EmailAddress.create("ja@me.edu.pl") shouldBe EmailAddress.create("ja@me.edu.pl")
+        }
     }
     describe("ZipCode.validate") {
         listOf("12345", "11223", "77766").forEach { zip ->

@@ -164,10 +164,10 @@ type PlaceOrderEvent =
 | AcknowledgmentSent  of OrderAcknowledgmentSent
  */
 //TODO: Fix it - is it OK?
-sealed class PlaceOrderEvent {
-    data class OrderPlaced(val payload: com.dnowak.order.taking.place.order.OrderPlaced): PlaceOrderEvent()
-    data class BillableOrderPlaced(val payload: com.dnowak.order.taking.place.order.BillableOrderPlaced): PlaceOrderEvent()
-    data class AcknowledgmentSent(val payload: OrderAcknowledmentSent): PlaceOrderEvent()
+sealed interface PlaceOrderEvent {
+    data class OrderPlaced(val payload: com.dnowak.order.taking.place.order.OrderPlaced): PlaceOrderEvent
+    data class BillableOrderPlaced(val payload: com.dnowak.order.taking.place.order.BillableOrderPlaced): PlaceOrderEvent
+    data class AcknowledgmentSent(val payload: OrderAcknowledmentSent): PlaceOrderEvent
 }
 
 

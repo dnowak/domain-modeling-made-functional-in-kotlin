@@ -15,7 +15,8 @@ I try to apply FP but in Kotlin. So I thought that it could be interesting to co
 It is not 1 to 1 copy. I have changed the original in several areas:
 * implementation is based on [Arrow](https://arrow-kt.io/) - functional library for Kotlin
 * data validation is based on arrow types
-* 
+* base type for simple types to support comparison and string representation
+* dependencies - 
 
 ## Original Code
 
