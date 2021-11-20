@@ -35,7 +35,7 @@ import com.dnowak.order.taking.common.prepend
 import com.dnowak.order.taking.common.validateNullableString50
 import com.dnowak.order.taking.common.validateString50
 import com.dnowak.order.taking.place.order.BillableOrderPlaced
-import com.dnowak.order.taking.place.order.OrderAcknowledmentSent
+import com.dnowak.order.taking.place.order.OrderAcknowledgmentSent
 import com.dnowak.order.taking.place.order.OrderPlaced
 import com.dnowak.order.taking.place.order.PlaceOrderError
 import com.dnowak.order.taking.place.order.PlaceOrderEvent
@@ -209,7 +209,7 @@ CreateOrderAcknowledgmentLetter  // dependency
 -> OrderAcknowledgmentSent option // output
  */
 
-typealias AcknowledgeOrder = (PricedOrder) -> OrderAcknowledmentSent?
+typealias AcknowledgeOrder = (PricedOrder) -> OrderAcknowledgmentSent?
 
 // ---------------------------
 // Create events
@@ -222,7 +222,7 @@ PricedOrder                           // input
 -> PlaceOrderEvent list              // output
  */
 
-typealias CreateEvents = (PricedOrder, OrderAcknowledmentSent?) -> List<PlaceOrderEvent>
+typealias CreateEvents = (PricedOrder, OrderAcknowledgmentSent?) -> List<PlaceOrderEvent>
 
 // ======================================================
 // Section 2 : Implementation
@@ -641,11 +641,11 @@ fun acknowledgeOrder(
     createOrderAcknowledgementLetter: CreateOrderAcknowledgementLetter,
     sendAcknowledgement: SendOrderAcknowledgment,
     order: PricedOrder,
-): OrderAcknowledmentSent? {
+): OrderAcknowledgmentSent? {
     val letter = createOrderAcknowledgementLetter(order)
     val orderAcknowledgement = OrderAcknowledgement(order.customerInfo.emailAddress, letter)
     return when (sendAcknowledgement(orderAcknowledgement)) {
-        SendResult.Sent -> OrderAcknowledmentSent(order.orderId, order.customerInfo.emailAddress)
+        SendResult.Sent -> OrderAcknowledgmentSent(order.orderId, order.customerInfo.emailAddress)
         SendResult.NotSent -> null
     }
 }
@@ -717,7 +717,7 @@ let createEvents : CreateEvents =
         ]
 */
 
-fun createEvents(pricedOrder: PricedOrder, orderAcknowledgmentSent: OrderAcknowledmentSent?): List<PlaceOrderEvent> {
+fun createEvents(pricedOrder: PricedOrder, orderAcknowledgmentSent: OrderAcknowledgmentSent?): List<PlaceOrderEvent> {
     val acknowledgmentEvents =
         orderAcknowledgmentSent?.let { sent -> listOf(PlaceOrderEvent.AcknowledgmentSent(sent)) } ?: emptyList()
     val orderPlacedEvents = listOf(PlaceOrderEvent.OrderPlaced(createOrderPlacedEvent(pricedOrder)))

@@ -514,7 +514,7 @@ let fromDomain (domainObj:OrderAcknowledgmentSent) :OrderAcknowledgmentSentDto =
 }
 */
 
-fun fromDomain(event: OrderAcknowledmentSent): OrderAcknowledgmentSentDto = event.run {
+fun fromDomain(event: OrderAcknowledgmentSent): OrderAcknowledgmentSentDto = event.run {
     OrderAcknowledgmentSentDto(
         orderId = orderId.value,
         emailAddress = emailAddress.value,
