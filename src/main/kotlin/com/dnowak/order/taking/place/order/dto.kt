@@ -1,7 +1,20 @@
 package com.dnowak.order.taking.place.order
 
-import arrow.core.*
-import com.dnowak.order.taking.common.*
+import arrow.core.ValidatedNel
+import arrow.core.zip
+import com.dnowak.order.taking.common.Address
+import com.dnowak.order.taking.common.City
+import com.dnowak.order.taking.common.CustomerInfo
+import com.dnowak.order.taking.common.EmailAddress
+import com.dnowak.order.taking.common.OrderQuantity
+import com.dnowak.order.taking.common.PersonalName
+import com.dnowak.order.taking.common.ProductCode
+import com.dnowak.order.taking.common.Property
+import com.dnowak.order.taking.common.PropertyValidationError
+import com.dnowak.order.taking.common.ZipCode
+import com.dnowak.order.taking.common.assign
+import com.dnowak.order.taking.common.validateNullableString50
+import com.dnowak.order.taking.common.validateString50
 import java.math.BigDecimal
 
 //===============================================

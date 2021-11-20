@@ -1,10 +1,53 @@
 package com.dnowak.order.taking.place.order.implementation
 
-import arrow.core.*
+import arrow.core.Either
+import arrow.core.None
+import arrow.core.Option
+import arrow.core.Validated
+import arrow.core.ValidatedNel
 import arrow.core.computations.either
-import com.dnowak.order.taking.common.*
-import com.dnowak.order.taking.place.order.*
+import arrow.core.flatMap
+import arrow.core.flatten
+import arrow.core.getOrElse
+import arrow.core.invalidNel
+import arrow.core.some
+import arrow.core.traverseEither
+import arrow.core.traverseValidated
+import arrow.core.validNel
+import arrow.core.zip
+import com.dnowak.order.taking.common.Address
+import com.dnowak.order.taking.common.BillingAmount
+import com.dnowak.order.taking.common.City
+import com.dnowak.order.taking.common.CustomerInfo
+import com.dnowak.order.taking.common.EmailAddress
+import com.dnowak.order.taking.common.OrderId
+import com.dnowak.order.taking.common.OrderLineId
+import com.dnowak.order.taking.common.OrderQuantity
+import com.dnowak.order.taking.common.PersonalName
+import com.dnowak.order.taking.common.Price
+import com.dnowak.order.taking.common.ProductCode
+import com.dnowak.order.taking.common.Property
+import com.dnowak.order.taking.common.PropertyValidationError
+import com.dnowak.order.taking.common.ValidationError
+import com.dnowak.order.taking.common.ZipCode
+import com.dnowak.order.taking.common.assign
+import com.dnowak.order.taking.common.prepend
+import com.dnowak.order.taking.common.validateNullableString50
+import com.dnowak.order.taking.common.validateString50
+import com.dnowak.order.taking.place.order.BillableOrderPlaced
+import com.dnowak.order.taking.place.order.OrderAcknowledmentSent
+import com.dnowak.order.taking.place.order.OrderPlaced
+import com.dnowak.order.taking.place.order.PlaceOrderError
+import com.dnowak.order.taking.place.order.PlaceOrderEvent
+import com.dnowak.order.taking.place.order.PricedOrder
+import com.dnowak.order.taking.place.order.PricedOrderLine
+import com.dnowak.order.taking.place.order.PricingError
+import com.dnowak.order.taking.place.order.UnvalidatedAddress
+import com.dnowak.order.taking.place.order.UnvalidatedCustomerInfo
+import com.dnowak.order.taking.place.order.UnvalidatedOrder
+import com.dnowak.order.taking.place.order.UnvalidatedOrderLine
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 // ======================================================
 // This file contains the final implementation for the PlaceOrder workflow
@@ -85,7 +128,7 @@ data class ValidatedOrder(
     val customerInfo: CustomerInfo,
     val shippingAddress: Address,
     val billingAddress: Address,
-    val lines: List<ValidatedOrderLine>
+    val lines: List<ValidatedOrderLine>,
 )
 
 /*
@@ -132,7 +175,7 @@ type OrderAcknowledgment = {
 }
 */
 
-data class OrderAcknoledgement(
+data class OrderAcknowledgement(
     val emailAddress: EmailAddress,
     val letter: HtmlString,
 )
@@ -156,7 +199,7 @@ sealed interface SendResult {
 
 //type SendOrderAcknowledgment = OrderAcknowledgment -> SendResult
 
-typealias SendOrderAcknowledgment = (OrderAcknoledgement) -> SendResult
+typealias SendOrderAcknowledgment = (OrderAcknowledgement) -> SendResult
 
 /*
 type AcknowledgeOrder =
@@ -305,7 +348,7 @@ match addrError with
 
 suspend fun toCheckedAddress(
     checkAddressExists: CheckAddressExists,
-    address: UnvalidatedAddress
+    address: UnvalidatedAddress,
 ): Validated<ValidationError, CheckedAddress> =
     checkAddressExists(address)
         .toValidated()
@@ -350,6 +393,7 @@ productCode
 |> Result.bind checkProduct
 */
 
+//TODO: switch to validate & check
 /* split into validation and checking
 fun toProductCode(
     checkProductCodeExists: CheckProductCodeExists,
@@ -363,7 +407,7 @@ fun toProductCode(
         }
     return .toEither().flatMap { code -> checkProduct(code).toEither() }.toValidated()
 }
- */
+*/
 
 /*
 /// Helper function for validateOrder
@@ -395,7 +439,7 @@ result {
 typealias ValidateOrderLine = (UnvalidatedOrderLine) -> ValidatedNel<PropertyValidationError, ValidatedOrderLine>
 
 fun validateOrderLine(
-    line: UnvalidatedOrderLine
+    line: UnvalidatedOrderLine,
 ): ValidatedNel<PropertyValidationError, ValidatedOrderLine> {
     val validatedOrderLineId = OrderLineId.validate(line.orderLineId)
         .assign(Property("orderLineId"))
@@ -410,9 +454,9 @@ fun validateOrderLine(
     }
 }
 
-fun checkValiatedOrderLine(
+fun checkValidatedOrderLine(
     checkProductCodeExists: CheckProductCodeExists,
-    line: ValidatedOrderLine
+    line: ValidatedOrderLine,
 ): ValidatedNel<PropertyValidationError, ValidatedOrderLine> =
     if (checkProductCodeExists(line.productCode)) {
         line.validNel()
@@ -467,7 +511,7 @@ fun validateOrder(
     validateCustomerInfo: ValidateCustomerInfo,
     validateAddress: ValidateAddress,
     validateOrderLine: ValidateOrderLine,
-    order: UnvalidatedOrder
+    order: UnvalidatedOrder,
 ): ValidatedNel<PropertyValidationError, ValidatedOrder> {
     val validatedOrderId = OrderId.validate(order.orderId)
         .assign(Property("orderId"))
@@ -512,8 +556,25 @@ result {
     }
     return pricedLine
 }
+*/
 
+typealias PriceOrderLine = (ValidatedOrderLine) -> Either<PricingError, PricedOrderLine>
 
+fun priceOrderLine(getProductPrice: GetProductPrice, line: ValidatedOrderLine): Either<PricingError, PricedOrderLine> =
+    either.eager {
+        val price = getProductPrice(line.productCode)
+        val linePrice = (price * line.quantity).bind()
+        line.run {
+            PricedOrderLine(orderLineId, productCode, line.quantity, linePrice)
+        }
+    }
+
+private operator fun Price.times(quantity: OrderQuantity): Either<PricingError, Price> =
+    Price.validate(value.multiply(quantity.quantity).setScale(2, RoundingMode.HALF_UP))
+        .toEither()
+        .mapLeft { errors -> PricingError(errors.map { error -> error.message }.joinToString()) }
+
+/*
 let priceOrder : PriceOrder =
 fun getProductPrice validatedOrder ->
 result {
@@ -536,8 +597,21 @@ result {
     }
     return pricedOrder
 }
+*/
 
+//TODO: Consider gathering pricing error from all lines -> would require switch to Validated
+fun priceOrder(priceOrderLine: PriceOrderLine, order: ValidatedOrder): Either<PricingError, PricedOrder> =
+    either.eager {
+        val lines = order.lines.traverseEither(priceOrderLine).bind()
+        val billingAmount = BillingAmount.validate(lines.sumOf { it.linePrice.value }.setScale(2, RoundingMode.HALF_UP))
+            .toEither().mapLeft { errors -> PricingError("amountToBill: " + errors.map { it.message }.joinToString()) }
+            .bind()
+        order.run {
+            PricedOrder(orderId, customerInfo, shippingAddress, billingAddress, billingAmount, lines)
+        }
+    }
 
+/*
 // ---------------------------
 // AcknowledgeOrder step
 // ---------------------------
@@ -561,7 +635,22 @@ let acknowledgeOrder : AcknowledgeOrder =
             Some event
         | NotSent ->
             None
+*/
 
+fun acknowledgeOrder(
+    createOrderAcknowledgementLetter: CreateOrderAcknowledgementLetter,
+    sendAcknowledgement: SendOrderAcknowledgment,
+    order: PricedOrder,
+): OrderAcknowledmentSent? {
+    val letter = createOrderAcknowledgementLetter(order)
+    val orderAcknowledgement = OrderAcknowledgement(order.customerInfo.emailAddress, letter)
+    return when (sendAcknowledgement(orderAcknowledgement)) {
+        SendResult.Sent -> OrderAcknowledmentSent(order.orderId, order.customerInfo.emailAddress)
+        SendResult.NotSent -> null
+    }
+}
+
+/*
 // ---------------------------
 // Create events
 // ---------------------------
@@ -667,6 +756,7 @@ let placeOrder
         }
 */
 
+//TODO: add checking (product codes, addresses)
 suspend fun placeOrder(
     validateOrder: ValidateOrder,
     priceOrder: PriceOrder,

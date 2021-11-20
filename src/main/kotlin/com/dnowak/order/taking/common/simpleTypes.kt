@@ -1,6 +1,15 @@
 package com.dnowak.order.taking.common
 
-import arrow.core.*
+import arrow.core.Invalid
+import arrow.core.Nel
+import arrow.core.Valid
+import arrow.core.Validated
+import arrow.core.ValidatedNel
+import arrow.core.getOrElse
+import arrow.core.invalidNel
+import arrow.core.nonEmptyListOf
+import arrow.core.partially1
+import arrow.core.valid
 import com.dnowak.order.taking.common.ProductCode.Gizmo
 import com.dnowak.order.taking.common.ProductCode.Widget
 import org.apache.commons.lang3.StringUtils
@@ -43,8 +52,8 @@ abstract class SimpleType<T : Any> protected constructor(val value: T) {
             return true
         }
         if (other?.javaClass == javaClass) {
-            val otherType = other as SimpleType<T>
-            return value == other.value
+            val otherType = other as SimpleType<*>
+            return value == otherType.value
         }
         return false
     }
@@ -178,6 +187,9 @@ class KilogramQuantity internal constructor(value: BigDecimal): SimpleType<BigDe
 
         fun create(quantity: BigDecimal): KilogramQuantity =
             validate(quantity).getOrElse { throw ValidationException(quantity.toString()) }
+
+        fun create(quantity: String): KilogramQuantity =
+            create((BigDecimal(quantity)))
     }
 }
 
@@ -225,6 +237,11 @@ sealed class OrderQuantity {
                 is Widget -> UnitQuantity.validate(value.intValueExact()).map(OrderQuantity::Unit)
             }
     }
+
+    val quantity: BigDecimal get() = when(this) {
+        is Kilogram -> value.value
+        is Unit -> value.value.toBigDecimal()
+    }
 }
 
 /// Constrained to be a decimal between 0.0 and 1000.00
@@ -234,24 +251,36 @@ class Price private constructor(value: BigDecimal): SimpleType<BigDecimal>(value
         private val min = BigDecimal("0.00")
         private val max = BigDecimal("1000.00")
 
-        fun validate(quantity: BigDecimal): ValidatedNel<ValidationError, Price> {
-            return validateBigDecimalInRange(min, max, quantity)
+        fun validate(amount: BigDecimal): ValidatedNel<ValidationError, Price> {
+            return validateBigDecimalInRange(min, max, amount)
                 .bimap(::nonEmptyListOf, ::Price)
         }
+
+        fun create(amount: BigDecimal): Price =
+            validate(amount).getOrElse { throw ValidationException(amount.toString()) }
+
+        fun create(amount: String): Price =
+            create(BigDecimal(amount))
     }
 }
 
 /// Constrained to be a decimal between 0.0 and 10000.00
 //type BillingAmount = private BillingAmount of decimal
-class BillingAmount internal constructor(value: BigDecimal): SimpleType<BigDecimal>(value) {
+class BillingAmount private constructor(value: BigDecimal): SimpleType<BigDecimal>(value) {
     companion object {
         private val min = BigDecimal("0.00")
         private val max = BigDecimal("10000.00")
 
-        fun validate(quantity: BigDecimal): ValidatedNel<ValidationError, BillingAmount> {
-            return validateBigDecimalInRange(min, max, quantity)
+        fun validate(amount: BigDecimal): ValidatedNel<ValidationError, BillingAmount> {
+            return validateBigDecimalInRange(min, max, amount)
                 .bimap(::nonEmptyListOf, ::BillingAmount)
         }
+
+        fun create(amount: BigDecimal): BillingAmount =
+            validate(amount).getOrElse { throw ValidationException(amount.toString()) }
+
+        fun create(amount: String): BillingAmount =
+            create(BigDecimal(amount))
     }
 }
 
