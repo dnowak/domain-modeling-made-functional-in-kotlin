@@ -9,7 +9,7 @@ import arrow.core.right
 import arrow.core.validNel
 import com.dnowak.order.taking.common.Property
 import com.dnowak.order.taking.common.PropertyValidationError
-import com.dnowak.order.taking.place.order.OrderAcknowledmentSent
+import com.dnowak.order.taking.place.order.OrderAcknowledgmentSent
 import com.dnowak.order.taking.place.order.PlaceOrder
 import com.dnowak.order.taking.place.order.PlaceOrderError
 import com.dnowak.order.taking.place.order.PlaceOrderEvent
@@ -39,7 +39,7 @@ internal class PlaceOrderTest : DescribeSpec({
 
         val validatedOrder: ValidatedOrder = mockk()
         val pricedOrder: PricedOrder = mockk()
-        val orderAcknowledgmentSent: OrderAcknowledmentSent = mockk()
+        val orderAcknowledgmentSent: OrderAcknowledgmentSent = mockk()
         val events: List<PlaceOrderEvent> = mockk()
         val unvalidatedOrder: UnvalidatedOrder = mockk()
 

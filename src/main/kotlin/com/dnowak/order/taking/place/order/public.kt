@@ -101,7 +101,7 @@ type OrderAcknowledgmentSent = {
 }
  */
 
-data class OrderAcknowledmentSent(
+data class OrderAcknowledgmentSent(
     val orderId:OrderId,
     val emailAddress: EmailAddress,
 )
@@ -175,10 +175,8 @@ type PlaceOrderEvent =
 sealed interface PlaceOrderEvent {
     data class OrderPlaced(val payload: com.dnowak.order.taking.place.order.OrderPlaced): PlaceOrderEvent
     data class BillableOrderPlaced(val payload: com.dnowak.order.taking.place.order.BillableOrderPlaced): PlaceOrderEvent
-    data class AcknowledgmentSent(val payload: OrderAcknowledmentSent): PlaceOrderEvent
+    data class AcknowledgmentSent(val payload: OrderAcknowledgmentSent): PlaceOrderEvent
 }
-
-
 
 // ------------------------------------
 // error outputs
