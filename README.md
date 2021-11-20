@@ -16,7 +16,7 @@ It is not 1 to 1 copy. I have changed the original in several areas:
 * implementation is based on [Arrow](https://arrow-kt.io/) - functional library for Kotlin
 * data validation is based on arrow types
 * base type for simple types to support comparison and string representation
-* dependencies - 
+* dependencies - only immediate dependencies are provided instead of dependencies of dependencies
 
 ## Original Code
 

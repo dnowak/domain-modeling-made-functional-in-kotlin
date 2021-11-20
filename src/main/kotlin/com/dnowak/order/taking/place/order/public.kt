@@ -2,8 +2,16 @@ package com.dnowak.order.taking.place.order
 
 import arrow.core.Either
 import arrow.core.Nel
-import com.dnowak.order.taking.common.*
-import java.lang.Exception
+import com.dnowak.order.taking.common.Address
+import com.dnowak.order.taking.common.BillingAmount
+import com.dnowak.order.taking.common.CustomerInfo
+import com.dnowak.order.taking.common.EmailAddress
+import com.dnowak.order.taking.common.OrderId
+import com.dnowak.order.taking.common.OrderLineId
+import com.dnowak.order.taking.common.OrderQuantity
+import com.dnowak.order.taking.common.Price
+import com.dnowak.order.taking.common.ProductCode
+import com.dnowak.order.taking.common.PropertyValidationError
 import java.math.BigDecimal
 import java.net.URI
 
