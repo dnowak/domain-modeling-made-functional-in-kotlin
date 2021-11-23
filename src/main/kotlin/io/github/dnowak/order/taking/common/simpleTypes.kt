@@ -234,6 +234,7 @@ sealed class OrderQuantity {
         fun validate(productCode: ProductCode, value: BigDecimal): ValidatedNel<ValidationError, OrderQuantity> =
             when (productCode) {
                 is Gizmo -> KilogramQuantity.validate(value).map(OrderQuantity::Kilogram)
+                //TODO: handle not exact int value as ValidationError
                 is Widget -> UnitQuantity.validate(value.intValueExact()).map(OrderQuantity::Unit)
             }
     }

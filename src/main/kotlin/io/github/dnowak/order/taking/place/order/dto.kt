@@ -312,7 +312,7 @@ data class PricedOrderLineDto(
     val orderLineId: String,
     val productCode: String,
     val quantity: BigDecimal,
-    val lineprice: BigDecimal,
+    val linePrice: BigDecimal,
 )
 
 //module internal PricedOrderLineDto =
@@ -334,14 +334,17 @@ private fun value(productCode: ProductCode): String = when (productCode) {
     is ProductCode.Widget -> productCode.code.value
 }
 
-private fun value(quantity: OrderQuantity): BigDecimal = TODO()
+private fun value(quantity: OrderQuantity): BigDecimal = when(quantity) {
+    is OrderQuantity.Kilogram -> quantity.value.value
+    is OrderQuantity.Unit -> quantity.value.value.toBigDecimal()
+}
 
 fun fromDomain(line: PricedOrderLine): PricedOrderLineDto = line.run {
     PricedOrderLineDto(
         orderLineId = orderLineId.value,
         productCode = value(productCode),
         quantity = value(quantity),
-        lineprice = linePrice.value,
+        linePrice = linePrice.value,
     )
 }
 
