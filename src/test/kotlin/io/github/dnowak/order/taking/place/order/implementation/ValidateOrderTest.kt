@@ -1,4 +1,4 @@
-package com.dnowak.order.taking.place.order.implementation
+package io.github.dnowak.order.taking.place.order.implementation
 
 import arrow.core.ValidatedNel
 import arrow.core.andThen
@@ -9,12 +9,12 @@ import arrow.core.nel
 import arrow.core.nonEmptyListOf
 import arrow.core.partially1
 import arrow.core.validNel
-import com.dnowak.order.taking.common.OrderLineId
-import com.dnowak.order.taking.common.OrderQuantity
-import com.dnowak.order.taking.common.ProductCode
-import com.dnowak.order.taking.common.Property
-import com.dnowak.order.taking.common.PropertyValidationError
-import com.dnowak.order.taking.common.ValidationError
+import io.github.dnowak.order.taking.common.OrderLineId
+import io.github.dnowak.order.taking.common.OrderQuantity
+import io.github.dnowak.order.taking.common.ProductCode
+import io.github.dnowak.order.taking.common.Property
+import io.github.dnowak.order.taking.common.PropertyValidationError
+import io.github.dnowak.order.taking.common.ValidationError
 import io.kotest.assertions.arrow.core.shouldBeInvalid
 import io.kotest.assertions.arrow.core.shouldBeValid
 import io.kotest.core.spec.style.DescribeSpec
@@ -26,7 +26,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
-import com.dnowak.order.taking.place.order.implementation.validateOrderLine as toOrderLine
+import io.github.dnowak.order.taking.place.order.implementation.validateOrderLine as toOrderLine
 
 internal class ValidateOrderTest : DescribeSpec({
     beforeTest { clearAllMocks() }

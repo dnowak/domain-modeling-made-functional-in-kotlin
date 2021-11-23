@@ -1,4 +1,4 @@
-package com.dnowak.order.taking.common
+package io.github.dnowak.order.taking.common
 
 // ==================================
 // Common compound types used throughout the OrderTaking domain

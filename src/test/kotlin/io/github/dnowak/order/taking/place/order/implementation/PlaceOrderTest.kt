@@ -1,4 +1,4 @@
-package com.dnowak.order.taking.place.order.implementation
+package io.github.dnowak.order.taking.place.order.implementation
 
 import arrow.core.Either
 import arrow.core.curried
@@ -7,15 +7,15 @@ import arrow.core.left
 import arrow.core.nel
 import arrow.core.right
 import arrow.core.validNel
-import com.dnowak.order.taking.common.Property
-import com.dnowak.order.taking.common.PropertyValidationError
-import com.dnowak.order.taking.place.order.OrderAcknowledgmentSent
-import com.dnowak.order.taking.place.order.PlaceOrder
-import com.dnowak.order.taking.place.order.PlaceOrderError
-import com.dnowak.order.taking.place.order.PlaceOrderEvent
-import com.dnowak.order.taking.place.order.PricedOrder
-import com.dnowak.order.taking.place.order.PricingError
-import com.dnowak.order.taking.place.order.UnvalidatedOrder
+import io.github.dnowak.order.taking.common.Property
+import io.github.dnowak.order.taking.common.PropertyValidationError
+import io.github.dnowak.order.taking.place.order.OrderAcknowledgmentSent
+import io.github.dnowak.order.taking.place.order.PlaceOrder
+import io.github.dnowak.order.taking.place.order.PlaceOrderError
+import io.github.dnowak.order.taking.place.order.PlaceOrderEvent
+import io.github.dnowak.order.taking.place.order.PricedOrder
+import io.github.dnowak.order.taking.place.order.PricingError
+import io.github.dnowak.order.taking.place.order.UnvalidatedOrder
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.DescribeSpec

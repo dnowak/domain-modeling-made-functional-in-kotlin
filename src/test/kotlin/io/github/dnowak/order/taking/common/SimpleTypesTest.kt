@@ -1,4 +1,4 @@
-package com.dnowak.order.taking.common
+package io.github.dnowak.order.taking.common
 
 import io.kotest.assertions.arrow.core.shouldBeInvalid
 import io.kotest.assertions.arrow.core.shouldBeValid

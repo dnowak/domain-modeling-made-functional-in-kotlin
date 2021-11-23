@@ -1,10 +1,10 @@
-package com.dnowak.order.taking.place.order.implementation
+package io.github.dnowak.order.taking.place.order.implementation
 
 import arrow.core.curried
-import com.dnowak.order.taking.common.BillingAmount
-import com.dnowak.order.taking.place.order.BillableOrderPlaced
-import com.dnowak.order.taking.place.order.OrderAcknowledgmentSent
-import com.dnowak.order.taking.place.order.PlaceOrderEvent
+import io.github.dnowak.order.taking.common.BillingAmount
+import io.github.dnowak.order.taking.place.order.BillableOrderPlaced
+import io.github.dnowak.order.taking.place.order.OrderAcknowledgmentSent
+import io.github.dnowak.order.taking.place.order.PlaceOrderEvent
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe

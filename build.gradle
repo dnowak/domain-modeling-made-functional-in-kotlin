@@ -47,7 +47,7 @@ application {
 tasks.test {
     kover {
         enabled = true
-        includes = ['com\\.dnowak\\..*']
+        includes = ['io\\.github\\.dnowak\\..*']
     }
 }
 
