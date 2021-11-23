@@ -1,11 +1,11 @@
-package com.dnowak.order.taking.place.order.implementation
+package io.github.dnowak.order.taking.place.order.implementation
 
 import arrow.core.Either
 import arrow.core.partially1
 import arrow.core.right
-import com.dnowak.order.taking.common.Price
-import com.dnowak.order.taking.place.order.PricedOrder
-import com.dnowak.order.taking.place.order.PricingError
+import io.github.dnowak.order.taking.common.Price
+import io.github.dnowak.order.taking.place.order.PricedOrder
+import io.github.dnowak.order.taking.place.order.PricingError
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.DescribeSpec

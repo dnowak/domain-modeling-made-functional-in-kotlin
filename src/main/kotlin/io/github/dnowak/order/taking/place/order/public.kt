@@ -1,17 +1,17 @@
-package com.dnowak.order.taking.place.order
+package io.github.dnowak.order.taking.place.order
 
 import arrow.core.Either
 import arrow.core.Nel
-import com.dnowak.order.taking.common.Address
-import com.dnowak.order.taking.common.BillingAmount
-import com.dnowak.order.taking.common.CustomerInfo
-import com.dnowak.order.taking.common.EmailAddress
-import com.dnowak.order.taking.common.OrderId
-import com.dnowak.order.taking.common.OrderLineId
-import com.dnowak.order.taking.common.OrderQuantity
-import com.dnowak.order.taking.common.Price
-import com.dnowak.order.taking.common.ProductCode
-import com.dnowak.order.taking.common.PropertyValidationError
+import io.github.dnowak.order.taking.common.Address
+import io.github.dnowak.order.taking.common.BillingAmount
+import io.github.dnowak.order.taking.common.CustomerInfo
+import io.github.dnowak.order.taking.common.EmailAddress
+import io.github.dnowak.order.taking.common.OrderId
+import io.github.dnowak.order.taking.common.OrderLineId
+import io.github.dnowak.order.taking.common.OrderQuantity
+import io.github.dnowak.order.taking.common.Price
+import io.github.dnowak.order.taking.common.ProductCode
+import io.github.dnowak.order.taking.common.PropertyValidationError
 import java.math.BigDecimal
 import java.net.URI
 
@@ -102,7 +102,7 @@ type OrderAcknowledgmentSent = {
  */
 
 data class OrderAcknowledgmentSent(
-    val orderId:OrderId,
+    val orderId: OrderId,
     val emailAddress: EmailAddress,
 )
 
@@ -173,8 +173,9 @@ type PlaceOrderEvent =
  */
 //TODO: Fix it - is it OK?
 sealed interface PlaceOrderEvent {
-    data class OrderPlaced(val payload: com.dnowak.order.taking.place.order.OrderPlaced): PlaceOrderEvent
-    data class BillableOrderPlaced(val payload: com.dnowak.order.taking.place.order.BillableOrderPlaced): PlaceOrderEvent
+    data class OrderPlaced(val payload: io.github.dnowak.order.taking.place.order.OrderPlaced): PlaceOrderEvent
+    data class BillableOrderPlaced(val payload: io.github.dnowak.order.taking.place.order.BillableOrderPlaced):
+        PlaceOrderEvent
     data class AcknowledgmentSent(val payload: OrderAcknowledgmentSent): PlaceOrderEvent
 }
 

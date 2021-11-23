@@ -1,4 +1,4 @@
-package com.dnowak.order.taking.common
+package io.github.dnowak.order.taking.common
 
 import arrow.core.Invalid
 import arrow.core.Nel
@@ -10,8 +10,8 @@ import arrow.core.invalidNel
 import arrow.core.nonEmptyListOf
 import arrow.core.partially1
 import arrow.core.valid
-import com.dnowak.order.taking.common.ProductCode.Gizmo
-import com.dnowak.order.taking.common.ProductCode.Widget
+import io.github.dnowak.order.taking.common.ProductCode.Gizmo
+import io.github.dnowak.order.taking.common.ProductCode.Widget
 import org.apache.commons.lang3.StringUtils
 import java.math.BigDecimal
 

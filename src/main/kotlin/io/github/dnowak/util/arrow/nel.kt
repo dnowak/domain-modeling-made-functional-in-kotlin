@@ -1,4 +1,4 @@
-package com.dnowak.util.arrow
+package io.github.dnowak.util.arrow
 
 import arrow.core.Nel
 import arrow.core.NonEmptyList
