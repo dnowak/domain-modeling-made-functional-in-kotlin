@@ -1,23 +1,32 @@
 package com.dnowak.order.taking.place.order.implementation
 
+import arrow.core.ValidatedNel
+import arrow.core.andThen
 import arrow.core.curried
 import arrow.core.invalid
 import arrow.core.invalidNel
 import arrow.core.nel
 import arrow.core.nonEmptyListOf
+import arrow.core.partially1
 import arrow.core.validNel
+import com.dnowak.order.taking.common.OrderLineId
+import com.dnowak.order.taking.common.OrderQuantity
+import com.dnowak.order.taking.common.ProductCode
 import com.dnowak.order.taking.common.Property
 import com.dnowak.order.taking.common.PropertyValidationError
+import com.dnowak.order.taking.common.ValidationError
 import io.kotest.assertions.arrow.core.shouldBeInvalid
 import io.kotest.assertions.arrow.core.shouldBeValid
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
+import com.dnowak.order.taking.place.order.implementation.validateOrderLine as toOrderLine
 
 internal class ValidateOrderTest : DescribeSpec({
     beforeTest { clearAllMocks() }
@@ -104,12 +113,51 @@ internal class ValidateOrderTest : DescribeSpec({
             reportedErrors shouldContainAll expectedErrors
         }
         it("validates order with real dependencies") {
+            val validateProductCode: ValidateProductCode = { code ->
+                ProductCode.validate(code).andThen(::checkProductCode.partially1 { _ -> true })
+            }
+
+            val validateLine: ValidateOrderLine =
+                ::toOrderLine.curried()(OrderLineId::validate)(validateProductCode)(OrderQuantity::validate)
+
             validateOrder(
                 ::validateCustomerInfo,
                 ::validateAddress,
-                ::validateOrderLine,
+                validateLine,
                 fixture.unvalidatedOrder
             ).shouldBeValid() shouldBe fixture.validatedOrder
+        }
+    }
+    describe("validateOrderLine") {
+        val validateProductCode: ValidateProductCode = mockk()
+        //TODO: mock the rest of validations
+        val validate: ValidateOrderLine =
+            ::toOrderLine.curried()(OrderLineId::validate)(validateProductCode)(OrderQuantity::validate)
+        context("valid line") {
+            lateinit var result: ValidatedNel<PropertyValidationError, ValidatedOrderLine>
+            beforeTest {
+                every { validateProductCode(fixture.unvalidatedOrderLine1.productCode) } returns fixture.validatedOrderLine1.productCode.validNel()
+
+                result = validate(fixture.unvalidatedOrderLine1)
+            }
+
+            it("returns validated order line") {
+                result.shouldBeValid() shouldBe fixture.validatedOrderLine1
+            }
+        }
+        context("invalid product code") {
+            lateinit var result: ValidatedNel<PropertyValidationError, ValidatedOrderLine>
+            val error = ValidationError("Invalid code")
+            beforeTest {
+                every { validateProductCode(fixture.unvalidatedOrderLine1.productCode) } returns error.invalidNel()
+
+                result = validate(fixture.unvalidatedOrderLine1)
+            }
+
+            it("returns validation error") {
+                result.shouldBeInvalid().all shouldContainExactlyInAnyOrder listOf(PropertyValidationError(Property("productCode").nel(),
+                    error.message))
+            }
         }
     }
 })

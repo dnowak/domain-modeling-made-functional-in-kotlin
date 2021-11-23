@@ -22,7 +22,7 @@ class String50 internal constructor(val value: String)
 
 /// An email address
 //type EmailAddress = private EmailAddress of string
-class EmailAddress private constructor(value: String): SimpleType<String>(value) {
+class EmailAddress private constructor(value: String) : SimpleType<String>(value) {
     companion object {
         fun validate(email: String): ValidatedNel<ValidationError, EmailAddress> =
             validateRegExp(".+@.+", email).bimap(::nonEmptyListOf, ::EmailAddress)
@@ -33,7 +33,7 @@ class EmailAddress private constructor(value: String): SimpleType<String>(value)
 
 /// A zip code
 //type ZipCode = private ZipCode of string
-class ZipCode private constructor(value: String): SimpleType<String>(value) {
+class ZipCode private constructor(value: String) : SimpleType<String>(value) {
     companion object {
         fun validate(zip: String): ValidatedNel<ValidationError, ZipCode> =
             validateRegExp("\\d{5}", zip).bimap(::nonEmptyListOf, ::ZipCode)
@@ -76,7 +76,7 @@ class OrderId private constructor(value: String) : SimpleType<String>(value) {
 
 /// An Id for OrderLines. Constrained to be a non-empty string < 10 chars
 //type OrderLineId = private OrderLineId of string
-class OrderLineId private constructor(value: String): SimpleType<String>(value) {
+class OrderLineId private constructor(value: String) : SimpleType<String>(value) {
     companion object {
         fun validate(id: String): ValidatedNel<ValidationError, OrderLineId> =
             validateStringLength(1, 10, id).bimap(::nonEmptyListOf, ::OrderLineId)
@@ -87,7 +87,7 @@ class OrderLineId private constructor(value: String): SimpleType<String>(value) 
 
 /// The codes for Widgets start with a "W" and then four digits
 //type WidgetCode = private WidgetCode of string
-class WidgetCode private constructor(value: String): SimpleType<String>(value) {
+class WidgetCode private constructor(value: String) : SimpleType<String>(value) {
     companion object {
         fun validate(code: String): ValidatedNel<ValidationError, WidgetCode> =
             validateRegExp("W\\d{4}", code).bimap(::nonEmptyListOf, ::WidgetCode)
@@ -98,7 +98,7 @@ class WidgetCode private constructor(value: String): SimpleType<String>(value) {
 
 /// The codes for Gizmos start with a "G" and then three digits.
 //type GizmoCode = private GizmoCode of string
-class GizmoCode private constructor(value: String): SimpleType<String>(value) {
+class GizmoCode private constructor(value: String) : SimpleType<String>(value) {
     companion object {
         fun validate(code: String): ValidatedNel<ValidationError, GizmoCode> =
             validateRegExp("G\\d{3}", code).bimap(::nonEmptyListOf, ::GizmoCode)
@@ -163,7 +163,7 @@ sealed class ProductCode {
 
 /// Constrained to be a integer between 1 and 1000
 //type UnitQuantity = private UnitQuantity of int
-class UnitQuantity private constructor(value: Int): SimpleType<Int>(value) {
+class UnitQuantity private constructor(value: Int) : SimpleType<Int>(value) {
     companion object {
         fun validate(quantity: Int): ValidatedNel<ValidationError, UnitQuantity> =
             validateIntInRange(1, 1000, quantity).bimap(::nonEmptyListOf, ::UnitQuantity)
@@ -175,7 +175,7 @@ class UnitQuantity private constructor(value: Int): SimpleType<Int>(value) {
 
 /// Constrained to be a decimal between 0.05 and 100.00
 //type KilogramQuantity = private KilogramQuantity of decimal
-class KilogramQuantity internal constructor(value: BigDecimal): SimpleType<BigDecimal>(value) {
+class KilogramQuantity internal constructor(value: BigDecimal) : SimpleType<BigDecimal>(value) {
     companion object {
         private val min = BigDecimal("0.05")
         private val max = BigDecimal("100.00")
@@ -238,15 +238,16 @@ sealed class OrderQuantity {
             }
     }
 
-    val quantity: BigDecimal get() = when(this) {
-        is Kilogram -> value.value
-        is Unit -> value.value.toBigDecimal()
-    }
+    val quantity: BigDecimal
+        get() = when (this) {
+            is Kilogram -> value.value
+            is Unit -> value.value.toBigDecimal()
+        }
 }
 
 /// Constrained to be a decimal between 0.0 and 1000.00
 //type Price = private Price of decimal
-class Price private constructor(value: BigDecimal): SimpleType<BigDecimal>(value) {
+class Price private constructor(value: BigDecimal) : SimpleType<BigDecimal>(value) {
     companion object {
         private val min = BigDecimal("0.00")
         private val max = BigDecimal("1000.00")
@@ -266,7 +267,7 @@ class Price private constructor(value: BigDecimal): SimpleType<BigDecimal>(value
 
 /// Constrained to be a decimal between 0.0 and 10000.00
 //type BillingAmount = private BillingAmount of decimal
-class BillingAmount private constructor(value: BigDecimal): SimpleType<BigDecimal>(value) {
+class BillingAmount private constructor(value: BigDecimal) : SimpleType<BigDecimal>(value) {
     companion object {
         private val min = BigDecimal("0.00")
         private val max = BigDecimal("10000.00")
@@ -342,7 +343,7 @@ fun validateIntInRange(min: Int, max: Int, value: Int): Validated<ValidationErro
 fun validateBigDecimalInRange(
     min: BigDecimal,
     max: BigDecimal,
-    value: BigDecimal
+    value: BigDecimal,
 ): Validated<ValidationError, BigDecimal> =
     if ((value >= min) && (value <= max)) {
         Valid(value)
