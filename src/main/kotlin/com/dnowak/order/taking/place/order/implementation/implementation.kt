@@ -1,12 +1,14 @@
 package com.dnowak.order.taking.place.order.implementation
 
 import arrow.core.Either
+import arrow.core.Nel
+import arrow.core.NonEmptyList
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Validated
 import arrow.core.ValidatedNel
+import arrow.core.andThen
 import arrow.core.computations.either
-import arrow.core.flatMap
 import arrow.core.flatten
 import arrow.core.getOrElse
 import arrow.core.invalidNel
@@ -46,6 +48,7 @@ import com.dnowak.order.taking.place.order.UnvalidatedAddress
 import com.dnowak.order.taking.place.order.UnvalidatedCustomerInfo
 import com.dnowak.order.taking.place.order.UnvalidatedOrder
 import com.dnowak.order.taking.place.order.UnvalidatedOrderLine
+import com.dnowak.util.arrow.unique
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -377,20 +380,21 @@ orderId
 
 /// Helper function for validateOrder
 let toProductCode (checkProductCodeExists:CheckProductCodeExists) productCode =
-// create a ProductCode -> Result<ProductCode,...> function
-// suitable for using in a pipeline
-let checkProduct productCode  =
-if checkProductCodeExists productCode then
-Ok productCode
-else
-let msg = sprintf "Invalid: %A" productCode
-Error (ValidationError msg)
 
-// assemble the pipeline
-productCode
-|> ProductCode.create "ProductCode"
-|> Result.mapError ValidationError // convert creation error into ValidationError
-|> Result.bind checkProduct
+    // create a ProductCode -> Result<ProductCode,...> function
+    // suitable for using in a pipeline
+    let checkProduct productCode  =
+        if checkProductCodeExists productCode then
+            Ok productCode
+        else
+            let msg = sprintf "Invalid: %A" productCode
+            Error (ValidationError msg)
+
+    // assemble the pipeline
+    productCode
+    |> ProductCode.create "ProductCode"
+    |> Result.mapError ValidationError // convert creation error into ValidationError
+    |> Result.bind checkProduct
 */
 
 //TODO: switch to validate & check
@@ -408,6 +412,16 @@ fun toProductCode(
     return .toEither().flatMap { code -> checkProduct(code).toEither() }.toValidated()
 }
 */
+
+fun checkProductCode(
+    checkProductCodeExists: CheckProductCodeExists,
+    productCode: ProductCode,
+): ValidatedNel<ValidationError, ProductCode> =
+    if (checkProductCodeExists(productCode)) {
+        productCode.validNel()
+    } else {
+        ValidationError("Invalid product code: <$productCode>").invalidNel()
+    }
 
 /*
 /// Helper function for validateOrder
@@ -436,34 +450,28 @@ result {
 }
 */
 
+typealias ValidateProductCode = (String) -> ValidatedNel<ValidationError, ProductCode>
+
 typealias ValidateOrderLine = (UnvalidatedOrderLine) -> ValidatedNel<PropertyValidationError, ValidatedOrderLine>
 
 fun validateOrderLine(
+    validateOrderLineId: (String) -> ValidatedNel<ValidationError, OrderLineId>,
+    validateProductCode: ValidateProductCode,
+    validateOrderQuantity: (ProductCode, BigDecimal) -> ValidatedNel<ValidationError, OrderQuantity>,
     line: UnvalidatedOrderLine,
 ): ValidatedNel<PropertyValidationError, ValidatedOrderLine> {
-    val validatedOrderLineId = OrderLineId.validate(line.orderLineId)
+    val validatedOrderLineId = validateOrderLineId(line.orderLineId)
         .assign(Property("orderLineId"))
-    val validateProductCode = ProductCode.validate(line.productCode)
+    val validatedProductCode = validateProductCode(line.productCode)
         .assign(Property("productCode"))
-    val validatedQuantity = validateProductCode.toEither()
-        .flatMap { code -> OrderQuantity.validate(code, line.quantity).assign(Property("quantity")).toEither() }
-        .toValidated()
+    val validatedQuantity = validatedProductCode.andThen { code ->
+        validateOrderQuantity(code, line.quantity).assign(Property("quantity"))
+    }
 
-    return validatedOrderLineId.zip(validateProductCode, validatedQuantity) { lineId, productCode, quantity ->
+    return validatedOrderLineId.zip(validatedProductCode, validatedQuantity) { lineId, productCode, quantity ->
         ValidatedOrderLine(lineId, productCode, quantity)
-    }
+    }.mapLeft(::unique)
 }
-
-fun checkValidatedOrderLine(
-    checkProductCodeExists: CheckProductCodeExists,
-    line: ValidatedOrderLine,
-): ValidatedNel<PropertyValidationError, ValidatedOrderLine> =
-    if (checkProductCodeExists(line.productCode)) {
-        line.validNel()
-    } else {
-        ValidationError("Invalid product code does not exist: <${line.productCode}>").invalidNel()
-            .assign(Property("productCode"))
-    }
 
 /*
 let validateOrder : ValidateOrder =

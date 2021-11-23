@@ -21,3 +21,11 @@ It is not 1 to 1 copy. I have changed the original in several areas:
 ## Original Code
 
 The code in */src/original* directory was copied from sources attached to the book.
+
+# TODO
+
+## Implement Address Validation 
+
+The validation incorporates address check which is an asynchronous operation. Because of that it enforces that address 
+and order validation become also synchronous. Async/suspend does not blend well with Validated. 
+Need to find a smart way to solve the problem. 
