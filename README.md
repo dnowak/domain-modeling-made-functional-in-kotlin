@@ -22,6 +22,49 @@ It is not 1 to 1 copy. I have changed the original in several areas:
 
 The code in */src/original* directory was copied from sources attached to the book.
 
+# Testing
+
+## Place Valid Order
+
+Execute the following command in shell:
+
+```shell
+curl --location --request POST 'http://localhost:8080/orders' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "orderId": "orderId",
+    "customerInfo": {
+        "firstName": "Jan",
+        "lastName": "Kowalski",
+        "emailAddress": "jan@kowalski.com"
+    },
+    "shippingAddress": {
+        "addressLine1": "Some Street 1",
+        "city": "Los Angeles",
+        "zipCode": "12345"
+    },
+    "billingAddress": {
+        "addressLine1": "Other Street 4",
+        "addressLine2": "Appatment 42",
+        "city": "Beverly Hills",
+        "zipCode": "90210"
+    },
+    "lines": [
+        {
+            "orderLineId": "line-1",
+            "productCode": "W1234",
+            "quantity": 10
+        },
+        {
+            "orderLineId": "line-2",
+            "productCode": "G123",
+            "quantity": 0.75
+        }
+    ]
+}
+'
+```
+
 # TODO
 
 ## Implement Address Validation 
