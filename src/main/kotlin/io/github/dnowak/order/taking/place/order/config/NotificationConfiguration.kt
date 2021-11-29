@@ -7,7 +7,6 @@ import io.github.dnowak.order.taking.place.order.implementation.HtmlString
 import io.github.dnowak.order.taking.place.order.implementation.SendOrderAcknowledgment
 import io.github.dnowak.order.taking.place.order.implementation.SendResult
 import io.github.dnowak.order.taking.place.order.implementation.acknowledgeOrder
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
