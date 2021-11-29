@@ -96,6 +96,7 @@ kover {
     generateReportOnCheck.set(true)         // false to do not execute `koverReport` task before `check` task
 }
 
+/*
 tasks.koverVerify {
     rule {
         name = "Minimal line coverage rate in percents"
@@ -105,3 +106,4 @@ tasks.koverVerify {
         }
     }
 }
+*/

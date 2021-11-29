@@ -15,11 +15,6 @@ import io.github.dnowak.order.taking.common.ProductCode.Widget
 import org.apache.commons.lang3.StringUtils
 import java.math.BigDecimal
 
-/// Constrained to be 50 chars or less, not null
-//type String50 = private String50 of string
-
-class String50 internal constructor(val value: String)
-
 /// An email address
 //type EmailAddress = private EmailAddress of string
 class EmailAddress private constructor(value: String) : SimpleType<String>(value) {
