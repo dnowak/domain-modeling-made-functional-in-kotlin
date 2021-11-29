@@ -42,13 +42,13 @@ class PlaceOrderConfiguration {
         val validateLine: ValidateOrderLine =
             ::validateOrderLine.curried()(OrderLineId::validate)(validateProductCode)(OrderQuantity::validate)
 
-        val validateOrdr: ValidateOrder =
+        val validateOrder: ValidateOrder =
             ::validateOrder.curried()(::validateCustomerInfo)(::validateAddress)(validateLine)
 
-        val priceOrdr: PriceOrder = ::priceOrder.partially1(::priceOrderLine.partially1(getProductPrice))
+        val priceOrder: PriceOrder = ::priceOrder.partially1(::priceOrderLine.partially1(getProductPrice))
 
-        val placeOrdr: PlaceOrder = ::placeOrder.curried()(validateOrdr)(priceOrdr)(acknowledgeOrder)(::createEvents)
+        val placeOrder: PlaceOrder = ::placeOrder.curried()(validateOrder)(priceOrder)(acknowledgeOrder)(::createEvents)
 
-        return placeOrdr
+        return placeOrder
     }
 }

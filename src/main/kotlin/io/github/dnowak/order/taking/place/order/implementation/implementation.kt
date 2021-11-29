@@ -1,8 +1,6 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
 import arrow.core.Either
-import arrow.core.Nel
-import arrow.core.NonEmptyList
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.Validated
