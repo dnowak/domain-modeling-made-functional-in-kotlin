@@ -43,8 +43,9 @@ dependencies {
     }
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
-    testImplementation "io.kotest:kotest-runner-junit5:4.6.3"
-    testImplementation group: 'io.kotest.extensions', name: 'kotest-assertions-arrow', version: '1.1.1'
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlin_coroutines_version"
+    testImplementation "io.kotest:kotest-runner-junit5:5.2.3"
+    testImplementation group: 'io.kotest.extensions', name: 'kotest-assertions-arrow', version: '1.2.4'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     testImplementation 'io.mockk:mockk:1.12.0'
 }
