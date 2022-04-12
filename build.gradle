@@ -1,8 +1,8 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 buildscript {
-    ext.kotlin_version = '1.5.31'
-    ext.kotlin_coroutines_version = '1.5.2'
+    ext.kotlin_version = '1.6.20'
+    ext.kotlin_coroutines_version = '1.6.0'
 }
 
 plugins {
