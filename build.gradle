@@ -1,8 +1,8 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 buildscript {
-    ext.kotlin_version = '1.6.20'
-    ext.kotlin_coroutines_version = '1.6.0'
+    ext.kotlin_version = '1.9.0-Beta'
+    ext.kotlin_coroutines_version = '1.7.1'
 }
 
 plugins {
@@ -44,10 +44,9 @@ dependencies {
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlin_coroutines_version"
-    testImplementation "io.kotest:kotest-runner-junit5:5.2.3"
+    testImplementation "io.kotest:kotest-runner-junit5:5.6.2"
     testImplementation group: 'io.kotest.extensions', name: 'kotest-assertions-arrow', version: '1.2.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    testImplementation 'io.mockk:mockk:1.12.3'
+    testImplementation 'io.mockk:mockk:1.13.5'
 }
 
 test {
