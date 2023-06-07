@@ -65,7 +65,7 @@ module internal CustomerInfoDto =
     /// Used when importing from the outside world into the domain, eg loading from a database
     let toCustomerInfo (dto:CustomerInfoDto) :Result<CustomerInfo,string> =
         result {
-            // get each (validated) simple type from the DTO as a success or failure
+            // get each (Either) simple type from the DTO as a success or failure
             let! first = dto.FirstName |> String50.create "FirstName"
             let! last = dto.LastName |> String50.create "LastName"
             let! email = dto.EmailAddress|> EmailAddress.create "EmailAddress"
@@ -119,7 +119,7 @@ module internal AddressDto =
     /// Used when importing from the outside world into the domain, eg loading from a database.
     let toAddress (dto:AddressDto) :Result<Common.Address,string> =
         result {
-            // get each (validated) simple type from the DTO as a success or failure
+            // get each (Either) simple type from the DTO as a success or failure
             let! addressLine1 = dto.AddressLine1 |> String50.create "AddressLine1"
             let! addressLine2 = dto.AddressLine2 |> String50.createOption "AddressLine2"
             let! addressLine3 = dto.AddressLine3 |> String50.createOption "AddressLine3"

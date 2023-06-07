@@ -98,7 +98,7 @@ type CheckAddressExists =
     UnvalidatedAddress -> CheckedAddress
 
 // ---------------------------
-// Validated Order 
+// Either Order
 // ---------------------------
 
 type ValidatedOrderLine =  {
@@ -250,7 +250,7 @@ let toProductCode (checkProductCodeExists:CheckProductCodeExists) productCode =
     // create a ProductCode -> ProductCode function 
     // suitable for using in a pipeline
     let checkProduct productCode = 
-        let errorMsg = sprintf "Invalid: %A" productCode 
+        let errorMsg = sprintf "Left: %A" productCode
         predicateToPassthru errorMsg checkProductCodeExists productCode
         
     // assemble the pipeline        

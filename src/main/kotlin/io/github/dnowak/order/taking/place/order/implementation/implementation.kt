@@ -1,19 +1,21 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
 import arrow.core.Either
+import arrow.core.Either.Companion.zipOrAccumulate
+import arrow.core.EitherNel
+import arrow.core.NonEmptyList
 import arrow.core.None
 import arrow.core.Option
-import arrow.core.Validated
-import arrow.core.ValidatedNel
-import arrow.core.andThen
-import arrow.core.computations.either
+import arrow.core.flatMap
 import arrow.core.flatten
+import arrow.core.flattenOrAccumulate
 import arrow.core.getOrElse
-import arrow.core.invalidNel
+import arrow.core.left
+import arrow.core.raise.either
+import arrow.core.right
 import arrow.core.some
+import arrow.core.toEitherNel
 import arrow.core.traverseEither
-import arrow.core.traverseValidated
-import arrow.core.validNel
 import arrow.core.zip
 import io.github.dnowak.order.taking.common.Address
 import io.github.dnowak.order.taking.common.BillingAmount
@@ -47,8 +49,11 @@ import io.github.dnowak.order.taking.place.order.UnvalidatedCustomerInfo
 import io.github.dnowak.order.taking.place.order.UnvalidatedOrder
 import io.github.dnowak.order.taking.place.order.UnvalidatedOrderLine
 import io.github.dnowak.util.arrow.unique
+import mu.KotlinLogging
 import java.math.BigDecimal
 import java.math.RoundingMode
+
+private val logger = KotlinLogging.logger {}
 
 // ======================================================
 // This file contains the final implementation for the PlaceOrder workflow
@@ -97,7 +102,7 @@ typealias CheckedAddress = UnvalidatedAddress
 typealias CheckAddressExists = suspend (UnvalidatedAddress) -> Either<AddressValidationError, CheckedAddress>
 
 // ---------------------------
-// Validated Order
+// Either Order
 // ---------------------------
 
 /*
@@ -141,7 +146,7 @@ CheckProductCodeExists  // dependency
 */
 
 //CHANGE: dropped dependencies from type definition, validation result
-typealias ValidateOrder = (UnvalidatedOrder) -> ValidatedNel<PropertyValidationError, ValidatedOrder>
+typealias ValidateOrder = (UnvalidatedOrder) -> EitherNel<PropertyValidationError, ValidatedOrder>
 
 // ---------------------------
 // Pricing step
@@ -255,9 +260,9 @@ result {
 }
  */
 
-typealias ValidateCustomerInfo = (UnvalidatedCustomerInfo) -> ValidatedNel<PropertyValidationError, CustomerInfo>
+typealias ValidateCustomerInfo = (UnvalidatedCustomerInfo) -> EitherNel<PropertyValidationError, CustomerInfo>
 
-fun validateCustomerInfo(info: UnvalidatedCustomerInfo): ValidatedNel<PropertyValidationError, CustomerInfo> {
+fun validateCustomerInfo(info: UnvalidatedCustomerInfo): EitherNel<PropertyValidationError, CustomerInfo> {
     val validatedFirstName = validateString50(info.firstName)
         .assign(Property("firstName"))
     val validatedLastName = validateString50(info.lastName)
@@ -308,9 +313,9 @@ result {
 }
 */
 
-typealias ValidateAddress = (UnvalidatedAddress) -> ValidatedNel<PropertyValidationError, Address>
+typealias ValidateAddress = (UnvalidatedAddress) -> EitherNel<PropertyValidationError, Address>
 
-fun validateAddress(address: CheckedAddress): ValidatedNel<PropertyValidationError, Address> {
+fun validateAddress(address: CheckedAddress): EitherNel<PropertyValidationError, Address> {
     val validatedAddresLine1 = validateString50(address.addressLine1)
         .assign(Property("addressLine1"))
     val validatedAddressLine2 = validateNullableString50(address.addressLine2)
@@ -350,9 +355,8 @@ match addrError with
 suspend fun toCheckedAddress(
     checkAddressExists: CheckAddressExists,
     address: UnvalidatedAddress,
-): Validated<ValidationError, CheckedAddress> =
+): Either<ValidationError, CheckedAddress> =
     checkAddressExists(address)
-        .toValidated()
         .mapLeft { error ->
             when (error) {
                 is AddressValidationError.AddressNotFound -> ValidationError("Address not found")
@@ -385,7 +389,7 @@ let toProductCode (checkProductCodeExists:CheckProductCodeExists) productCode =
         if checkProductCodeExists productCode then
             Ok productCode
         else
-            let msg = sprintf "Invalid: %A" productCode
+            let msg = sprintf "Left: %A" productCode
             Error (ValidationError msg)
 
     // assemble the pipeline
@@ -403,9 +407,9 @@ fun toProductCode(
 ): ValidatedNel<ValidationError, ProductCode> {
     fun checkProduct(productCode: ProductCode): ValidatedNel<ValidationError, ProductCode> =
         if (checkProductCodeExists(productCode)) {
-            productCode.validNel()
+            productCode.right()
         } else {
-            ValidationError("Invalid product code: <$productCode>").invalidNel()
+            ValidationError("Left product code: <$productCode>").left().toEitherNel()
         }
     return .toEither().flatMap { code -> checkProduct(code).toEither() }.toValidated()
 }
@@ -414,11 +418,11 @@ fun toProductCode(
 fun checkProductCode(
     checkProductCodeExists: CheckProductCodeExists,
     productCode: ProductCode,
-): ValidatedNel<ValidationError, ProductCode> =
+): EitherNel<ValidationError, ProductCode> =
     if (checkProductCodeExists(productCode)) {
-        productCode.validNel()
+        productCode.right()
     } else {
-        ValidationError("Invalid product code: <$productCode>").invalidNel()
+        ValidationError("Left product code: <$productCode>").left().toEitherNel()
     }
 
 /*
@@ -448,26 +452,26 @@ result {
 }
 */
 
-typealias ValidateProductCode = (String) -> ValidatedNel<ValidationError, ProductCode>
+typealias ValidateProductCode = (String) -> EitherNel<ValidationError, ProductCode>
 
-typealias ValidateOrderLine = (UnvalidatedOrderLine) -> ValidatedNel<PropertyValidationError, ValidatedOrderLine>
+typealias ValidateOrderLine = (UnvalidatedOrderLine) -> EitherNel<PropertyValidationError, ValidatedOrderLine>
 
 fun validateOrderLine(
-    validateOrderLineId: (String) -> ValidatedNel<ValidationError, OrderLineId>,
+    validateOrderLineId: (String) -> EitherNel<ValidationError, OrderLineId>,
     validateProductCode: ValidateProductCode,
-    validateOrderQuantity: (ProductCode, BigDecimal) -> ValidatedNel<ValidationError, OrderQuantity>,
+    validateOrderQuantity: (ProductCode, BigDecimal) -> EitherNel<ValidationError, OrderQuantity>,
     line: UnvalidatedOrderLine,
-): ValidatedNel<PropertyValidationError, ValidatedOrderLine> {
+): EitherNel<PropertyValidationError, ValidatedOrderLine> {
     val validatedOrderLineId = validateOrderLineId(line.orderLineId)
         .assign(Property("orderLineId"))
     val validatedProductCode = validateProductCode(line.productCode)
         .assign(Property("productCode"))
-    val validatedQuantity = validatedProductCode.andThen { code ->
+    val validatedQuantity = validatedProductCode.flatMap { code ->
         validateOrderQuantity(code, line.quantity).assign(Property("quantity"))
     }
 
-    return validatedOrderLineId.zip(validatedProductCode, validatedQuantity) { lineId, productCode, quantity ->
-        ValidatedOrderLine(lineId, productCode, quantity)
+    return either {
+        ValidatedOrderLine(validatedOrderLineId.bind(), validatedProductCode.bind(), validatedQuantity.bind())
     }.mapLeft(::unique)
 }
 
@@ -518,7 +522,7 @@ fun validateOrder(
     validateAddress: ValidateAddress,
     validateOrderLine: ValidateOrderLine,
     order: UnvalidatedOrder,
-): ValidatedNel<PropertyValidationError, ValidatedOrder> {
+): EitherNel<PropertyValidationError, ValidatedOrder> {
     val validatedOrderId = OrderId.validate(order.orderId)
         .assign(Property("orderId"))
     val validatedCustomerInfo = validateCustomerInfo(order.customerInfo)
@@ -530,9 +534,10 @@ fun validateOrder(
     val validatedLines = order.lines.mapIndexed { index, line ->
         validateOrderLine(line)
             .prepend(Property("lines[$index]"))
-    }.traverseValidated { it }
+    }.flattenOrAccumulate()
 
-    return validatedOrderId.zip(
+    return zipOrAccumulate(
+        validatedOrderId,
         validatedCustomerInfo,
         validatedShippingAddress,
         validatedBillingAddress,
@@ -567,7 +572,7 @@ result {
 typealias PriceOrderLine = (ValidatedOrderLine) -> Either<PricingError, PricedOrderLine>
 
 fun priceOrderLine(getProductPrice: GetProductPrice, line: ValidatedOrderLine): Either<PricingError, PricedOrderLine> =
-    either.eager {
+    either {
         val price = getProductPrice(line.productCode)
         val linePrice = (price * line.quantity).bind()
         line.run {
@@ -605,9 +610,9 @@ result {
 }
 */
 
-//TODO: Consider gathering pricing error from all lines -> would require switch to Validated
+//TODO: Consider gathering pricing error from all lines -> would require switch to Either
 fun priceOrder(priceOrderLine: PriceOrderLine, order: ValidatedOrder): Either<PricingError, PricedOrder> =
-    either.eager {
+    either {
         val lines = order.lines.traverseEither(priceOrderLine).bind()
         val billingAmount = BillingAmount.validate(lines.sumOf { it.linePrice.value }.setScale(2, RoundingMode.HALF_UP))
             .toEither().mapLeft { errors -> PricingError("amountToBill: " + errors.map { it.message }.joinToString()) }

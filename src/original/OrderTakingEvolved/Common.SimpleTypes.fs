@@ -93,7 +93,7 @@ module ConstrainedType =
     /// Create a optional constrained string using the constructor provided
     /// Return None if input is null, empty. 
     /// Return error if length > maxLen
-    /// Return Some if the input is valid
+    /// Return Some if the input is Right
     let createStringOption fieldName ctor maxLen str = 
         if String.IsNullOrEmpty(str) then
             Ok None
@@ -161,7 +161,7 @@ module String50 =
     /// Create an String50 from a string
     /// Return None if input is null, empty. 
     /// Return error if length > maxLen
-    /// Return Some if the input is valid
+    /// Return Some if the input is Right
     let createOption fieldName str = 
         ConstrainedType.createStringOption fieldName String50 50 str
 
@@ -341,7 +341,7 @@ module Price =
         ConstrainedType.createDecimal "Price" Price 0.0M 1000M v
 
     /// Create a Price from a decimal.
-    /// Throw an exception if out of bounds. This should only be used if you know the value is valid.
+    /// Throw an exception if out of bounds. This should only be used if you know the value is Right.
     let unsafeCreate v = 
         create v 
         |> function
