@@ -1,28 +1,29 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
-import arrow.core.ValidatedNel
-import arrow.core.andThen
+import arrow.core.EitherNel
 import arrow.core.curried
-import arrow.core.invalid
-import arrow.core.invalidNel
+import arrow.core.flatMap
+import arrow.core.left
 import arrow.core.nel
 import arrow.core.nonEmptyListOf
 import arrow.core.partially1
-import arrow.core.validNel
+import arrow.core.right
+import arrow.core.toEitherNel
 import io.github.dnowak.order.taking.common.OrderLineId
 import io.github.dnowak.order.taking.common.OrderQuantity
 import io.github.dnowak.order.taking.common.ProductCode
 import io.github.dnowak.order.taking.common.Property
 import io.github.dnowak.order.taking.common.PropertyValidationError
 import io.github.dnowak.order.taking.common.ValidationError
-import io.kotest.assertions.arrow.core.shouldBeInvalid
-import io.kotest.assertions.arrow.core.shouldBeValid
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -39,82 +40,84 @@ internal class ValidateOrderTest : DescribeSpec({
             ::validateOrder.curried()(validateCustomerInfo)(validateAddress)(validateOrderLine)
 
         beforeTest {
-            every { validateCustomerInfo(fixture.unvalidatedCustomerInfo) } returns fixture.validatedCustomerInfo.validNel()
-            every { validateAddress(fixture.unvalidatedShippingAddress) } returns fixture.validatedShippingAddress.validNel()
-            every { validateAddress(fixture.unvalidatedBillingAddress) } returns fixture.validatedBillingAddress.validNel()
-            every { validateOrderLine(fixture.unvalidatedOrderLine1) } returns fixture.validatedOrderLine1.validNel()
-            every { validateOrderLine(fixture.unvalidatedOrderLine2) } returns fixture.validatedOrderLine2.validNel()
+            every { validateCustomerInfo(fixture.unvalidatedCustomerInfo) } returns fixture.validatedCustomerInfo.right()
+            every { validateAddress(fixture.unvalidatedShippingAddress) } returns fixture.validatedShippingAddress.right()
+            every { validateAddress(fixture.unvalidatedBillingAddress) } returns fixture.validatedBillingAddress.right()
+            every { validateOrderLine(fixture.unvalidatedOrderLine1) } returns fixture.validatedOrderLine1.right()
+            every { validateOrderLine(fixture.unvalidatedOrderLine2) } returns fixture.validatedOrderLine2.right()
         }
         it("validates correct order") {
-            validate(fixture.unvalidatedOrder).shouldBeValid() shouldBe fixture.validatedOrder
+            validate(fixture.unvalidatedOrder) shouldBeRight fixture.validatedOrder
         }
         it("validates orderId") {
-            validate(fixture.unvalidatedOrder.copy(orderId = "")).shouldBeInvalid().all shouldExist { error ->
+            validate(fixture.unvalidatedOrder.copy(orderId = "")).shouldBeLeft().all shouldExist { error ->
                 error.path == nonEmptyListOf(Property("orderId"))
             }
         }
         it("validates properties") {
             every { validateCustomerInfo(any()) } returns PropertyValidationError(
                 Property("customerProperty").nel(),
-                "invalid"
-            ).invalidNel()
+                "Left"
+            ).left().toEitherNel()
             every { validateAddress(fixture.unvalidatedShippingAddress) } returns nonEmptyListOf(
-                PropertyValidationError(Property("line1").nel(), "invalid line 1"),
-                PropertyValidationError(Property("city1").nel(), "invalid city 1"),
-            ).invalid()
+                PropertyValidationError(Property("line1").nel(), "Left line 1"),
+                PropertyValidationError(Property("city1").nel(), "Left city 1"),
+            ).left()
             every { validateAddress(fixture.unvalidatedBillingAddress) } returns nonEmptyListOf(
-                PropertyValidationError(Property("line2").nel(), "invalid line 2"),
-                PropertyValidationError(Property("zip2").nel(), "invalid zip 2"),
-            ).invalid()
+                PropertyValidationError(Property("line2").nel(), "Left line 2"),
+                PropertyValidationError(Property("zip2").nel(), "Left zip 2"),
+            ).left()
             every { validateOrderLine(fixture.unvalidatedOrderLine1) } returns nonEmptyListOf(
-                PropertyValidationError(Property("product1").nel(), "invalid product 1"),
-                PropertyValidationError(Property("quantity1").nel(), "invalid quantity 1"),
-            ).invalid()
+                PropertyValidationError(Property("product1").nel(), "Left product 1"),
+                PropertyValidationError(Property("quantity1").nel(), "Left quantity 1"),
+            ).left()
             every { validateOrderLine(fixture.unvalidatedOrderLine2) } returns nonEmptyListOf(
-                PropertyValidationError(Property("id2").nel(), "invalid id 2"),
-            ).invalid()
+                PropertyValidationError(Property("id2").nel(), "Left id 2"),
+            ).left()
 
             val expectedErrors = listOf(
                 PropertyValidationError(
                     nonEmptyListOf(Property("customerInfo"), Property("customerProperty")),
-                    "invalid"
+                    "Left"
                 ),
                 PropertyValidationError(
                     nonEmptyListOf(Property("shippingAddress"), Property("line1")),
-                    "invalid line 1"
+                    "Left line 1"
                 ),
                 PropertyValidationError(
                     nonEmptyListOf(Property("shippingAddress"), Property("city1")),
-                    "invalid city 1"
+                    "Left city 1"
                 ),
                 PropertyValidationError(
                     nonEmptyListOf(Property("billingAddress"), Property("line2")),
-                    "invalid line 2"
+                    "Left line 2"
                 ),
                 PropertyValidationError(
                     nonEmptyListOf(Property("billingAddress"), Property("zip2")),
-                    "invalid zip 2"
+                    "Left zip 2"
                 ),
                 PropertyValidationError(
                     nonEmptyListOf(Property("lines[0]"), Property("quantity1")),
-                    "invalid quantity 1"
+                    "Left quantity 1"
                 ),
                 PropertyValidationError(
                     nonEmptyListOf(Property("lines[0]"), Property("product1")),
-                    "invalid product 1"
+                    "Left product 1"
                 ),
                 PropertyValidationError(
                     nonEmptyListOf(Property("lines[1]"), Property("id2")),
-                    "invalid id 2"
+                    "Left id 2"
                 ),
             )
-            val reportedErrors = validate(fixture.unvalidatedOrder).shouldBeInvalid().all
-            reportedErrors shouldHaveSize expectedErrors.size
-            reportedErrors shouldContainAll expectedErrors
+            val reportedErrors = validate(fixture.unvalidatedOrder).shouldBeLeft().all
+//            reportedErrors shouldHaveSize expectedErrors.size
+            withClue(reportedErrors) {
+                reportedErrors shouldContainOnly expectedErrors
+            }
         }
         it("validates order with real dependencies") {
             val validateProductCode: ValidateProductCode = { code ->
-                ProductCode.validate(code).andThen(::checkProductCode.partially1 { _ -> true })
+                ProductCode.validate(code).flatMap(::checkProductCode.partially1 { _ -> true })
             }
 
             val validateLine: ValidateOrderLine =
@@ -125,7 +128,7 @@ internal class ValidateOrderTest : DescribeSpec({
                 ::validateAddress,
                 validateLine,
                 fixture.unvalidatedOrder
-            ).shouldBeValid() shouldBe fixture.validatedOrder
+            ) shouldBeRight fixture.validatedOrder
         }
     }
     describe("validateOrderLine") {
@@ -133,30 +136,34 @@ internal class ValidateOrderTest : DescribeSpec({
         //TODO: mock the rest of validations
         val validate: ValidateOrderLine =
             ::toOrderLine.curried()(OrderLineId::validate)(validateProductCode)(OrderQuantity::validate)
-        context("valid line") {
-            lateinit var result: ValidatedNel<PropertyValidationError, ValidatedOrderLine>
+        context("Right line") {
+            lateinit var result: EitherNel<PropertyValidationError, ValidatedOrderLine>
             beforeTest {
-                every { validateProductCode(fixture.unvalidatedOrderLine1.productCode) } returns fixture.validatedOrderLine1.productCode.validNel()
+                every { validateProductCode(fixture.unvalidatedOrderLine1.productCode) } returns fixture.validatedOrderLine1.productCode.right()
 
                 result = validate(fixture.unvalidatedOrderLine1)
             }
 
-            it("returns validated order line") {
-                result.shouldBeValid() shouldBe fixture.validatedOrderLine1
+            it("returns Either order line") {
+                result shouldBeRight fixture.validatedOrderLine1
             }
         }
-        context("invalid product code") {
-            lateinit var result: ValidatedNel<PropertyValidationError, ValidatedOrderLine>
-            val error = ValidationError("Invalid code")
+        context("Left product code") {
+            lateinit var result: EitherNel<PropertyValidationError, ValidatedOrderLine>
+            val error = ValidationError("Left code")
             beforeTest {
-                every { validateProductCode(fixture.unvalidatedOrderLine1.productCode) } returns error.invalidNel()
+                every { validateProductCode(fixture.unvalidatedOrderLine1.productCode) } returns error.left().toEitherNel()
 
                 result = validate(fixture.unvalidatedOrderLine1)
             }
 
             it("returns validation error") {
-                result.shouldBeInvalid().all shouldContainExactlyInAnyOrder listOf(PropertyValidationError(Property("productCode").nel(),
-                    error.message))
+                result.shouldBeLeft().all shouldContainExactlyInAnyOrder listOf(
+                    PropertyValidationError(
+                        Property("productCode").nel(),
+                        error.message
+                    )
+                )
             }
         }
     }

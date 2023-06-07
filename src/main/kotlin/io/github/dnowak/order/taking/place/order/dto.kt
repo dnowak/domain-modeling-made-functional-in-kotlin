@@ -1,6 +1,6 @@
 package io.github.dnowak.order.taking.place.order
 
-import arrow.core.ValidatedNel
+import arrow.core.EitherNel
 import arrow.core.zip
 import io.github.dnowak.order.taking.common.Address
 import io.github.dnowak.order.taking.common.City
@@ -68,7 +68,7 @@ fun toUnvalidatedCustomerInfo(dto: CustomerInfoDto): UnvalidatedCustomerInfo =
 /*
 let toCustomerInfo (dto:CustomerInfoDto) :Result<CustomerInfo,string> =
 result {
-    // get each (validated) simple type from the DTO as a success or failure
+    // get each (Either) simple type from the DTO as a success or failure
     let!first = dto.FirstName |> String50.create "FirstName"
     let!last = dto.LastName |> String50.create "LastName"
     let!email = dto.EmailAddress|> EmailAddress.create "EmailAddress"
@@ -80,7 +80,7 @@ result {
 }
 */
 
-fun toCustomerInfo(dto: CustomerInfoDto): ValidatedNel<PropertyValidationError, CustomerInfo> {
+fun toCustomerInfo(dto: CustomerInfoDto): EitherNel<PropertyValidationError, CustomerInfo> {
     val validatedFirstName = validateString50(dto.firstName)
         .assign(Property("firstName"))
     val validatedLastName = validateString50(dto.lastName)
@@ -182,7 +182,7 @@ fun toUnvalidatedAddress(dto: AddressDto): UnvalidatedAddress =
 /*
 let toAddress (dto:AddressDto) :Result<Address,string> =
 result {
-    // get each (validated) simple type from the DTO as a success or failure
+    // get each (Either) simple type from the DTO as a success or failure
     let!addressLine1 = dto.AddressLine1 |> String50.create "AddressLine1"
     let!addressLine2 = dto.AddressLine2 |> String50.createOption "AddressLine2"
     let!addressLine3 = dto.AddressLine3 |> String50.createOption "AddressLine3"
@@ -207,7 +207,7 @@ result {
 }
 */
 
-fun toAddress(dto: AddressDto): ValidatedNel<PropertyValidationError, Address> {
+fun toAddress(dto: AddressDto): EitherNel<PropertyValidationError, Address> {
     val validatedLine1 = validateString50(dto.addressLine1)
         .assign(Property("addressLine1"))
     val validatedLine2 = validateNullableString50(dto.addressLine2)
@@ -334,7 +334,7 @@ private fun value(productCode: ProductCode): String = when (productCode) {
     is ProductCode.Widget -> productCode.code.value
 }
 
-private fun value(quantity: OrderQuantity): BigDecimal = when(quantity) {
+private fun value(quantity: OrderQuantity): BigDecimal = when (quantity) {
     is OrderQuantity.Kilogram -> quantity.value.value
     is OrderQuantity.Unit -> quantity.value.value.toBigDecimal()
 }
@@ -616,6 +616,7 @@ fun fromDomain(error: PlaceOrderError): PlaceOrderErrorDto = when (error) {
     is PlaceOrderError.Pricing -> PlaceOrderErrorDto("PricingError", error.error.message)
     is PlaceOrderError.RemoteService ->
         PlaceOrderErrorDto("RemoteServiceError", "${error.error.service}: ${error.error.exception}")
+
     is PlaceOrderError.Validation ->
         PlaceOrderErrorDto("ValidationError", "Validation errors", error.errors.map(::fromDomain))
 }

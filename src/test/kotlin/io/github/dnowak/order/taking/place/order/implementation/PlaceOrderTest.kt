@@ -1,8 +1,8 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
 import arrow.core.Either
+import arrow.core.Either.Left
 import arrow.core.curried
-import arrow.core.invalid
 import arrow.core.left
 import arrow.core.nel
 import arrow.core.right
@@ -44,7 +44,7 @@ internal class PlaceOrderTest : DescribeSpec({
         val unvalidatedOrder: UnvalidatedOrder = mockk()
 
         beforeTest {
-            coEvery { validateOrder(any()) } returns validatedOrder.validNel()
+            coEvery { validateOrder(any()) } returns validatedOrder.right()
             coEvery { priceOrder(any()) } returns pricedOrder.right()
             every { acknowledgeOrder(any()) } returns orderAcknowledgmentSent
             every { createEvents(any(), any()) } returns events
@@ -75,10 +75,10 @@ internal class PlaceOrderTest : DescribeSpec({
         context("validation error") {
             lateinit var placeResult: Either<PlaceOrderError, List<PlaceOrderEvent>>
 
-            val validationErrors = PropertyValidationError(Property("name").nel(), "Invalid name").nel()
+            val validationErrors = PropertyValidationError(Property("name").nel(), "Left name").nel()
 
             beforeTest {
-                coEvery { validateOrder(any()) } returns validationErrors.invalid()
+                coEvery { validateOrder(any()) } returns validationErrors.left()
 
                 placeResult = placeOrder(unvalidatedOrder)
             }
@@ -89,7 +89,7 @@ internal class PlaceOrderTest : DescribeSpec({
         context("pricing error") {
             lateinit var placeResult: Either<PlaceOrderError, List<PlaceOrderEvent>>
 
-            val pricingError = PricingError("Invalid price")
+            val pricingError = PricingError("Left price")
 
             beforeTest {
                 coEvery { priceOrder(any()) } returns pricingError.left()

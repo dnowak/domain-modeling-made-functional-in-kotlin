@@ -2,6 +2,7 @@ package io.github.dnowak.order.taking.place.order.config
 
 import arrow.core.andThen
 import arrow.core.curried
+import arrow.core.flatMap
 import arrow.core.partially1
 import io.github.dnowak.order.taking.common.OrderLineId
 import io.github.dnowak.order.taking.common.OrderQuantity
@@ -36,7 +37,7 @@ class PlaceOrderConfiguration {
         acknowledgeOrder: AcknowledgeOrder,
     ): PlaceOrder {
         val validateProductCode: ValidateProductCode = { code ->
-            ProductCode.validate(code).andThen(::checkProductCode.partially1(checkProductCodeExists))
+            ProductCode.validate(code).flatMap(::checkProductCode.partially1(checkProductCodeExists))
         }
 
         val validateLine: ValidateOrderLine =

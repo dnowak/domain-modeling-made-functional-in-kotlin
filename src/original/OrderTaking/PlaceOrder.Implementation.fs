@@ -38,7 +38,7 @@ type CheckAddressExists =
     UnvalidatedAddress -> AsyncResult<CheckedAddress,AddressValidationError>
 
 // ---------------------------
-// Validated Order 
+// Either Order
 // ---------------------------
 
 type ValidatedOrderLine =  {
@@ -214,7 +214,7 @@ let toProductCode (checkProductCodeExists:CheckProductCodeExists) productCode =
         if checkProductCodeExists productCode then
             Ok productCode 
         else
-            let msg = sprintf "Invalid: %A" productCode 
+            let msg = sprintf "Left: %A" productCode
             Error (ValidationError msg) 
         
     // assemble the pipeline        

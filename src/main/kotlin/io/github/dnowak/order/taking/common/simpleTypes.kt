@@ -1,15 +1,16 @@
 package io.github.dnowak.order.taking.common
 
-import arrow.core.Invalid
+import arrow.core.Either
+import arrow.core.Either.Left
+import arrow.core.Either.Right
+import arrow.core.EitherNel
 import arrow.core.Nel
-import arrow.core.Valid
-import arrow.core.Validated
-import arrow.core.ValidatedNel
 import arrow.core.getOrElse
-import arrow.core.invalidNel
+import arrow.core.left
 import arrow.core.nonEmptyListOf
 import arrow.core.partially1
-import arrow.core.valid
+import arrow.core.right
+import arrow.core.toEitherNel
 import io.github.dnowak.order.taking.common.ProductCode.Gizmo
 import io.github.dnowak.order.taking.common.ProductCode.Widget
 import org.apache.commons.lang3.StringUtils
@@ -19,8 +20,8 @@ import java.math.BigDecimal
 //type EmailAddress = private EmailAddress of string
 class EmailAddress private constructor(value: String) : SimpleType<String>(value) {
     companion object {
-        fun validate(email: String): ValidatedNel<ValidationError, EmailAddress> =
-            validateRegExp(".+@.+", email).bimap(::nonEmptyListOf, ::EmailAddress)
+        fun validate(email: String): EitherNel<ValidationError, EmailAddress> =
+            validateRegExp(".+@.+", email).map(::EmailAddress).mapLeft(::nonEmptyListOf)
 
         fun create(email: String): EmailAddress = validate(email).getOrElse { throw ValidationException(email) }
     }
@@ -30,8 +31,8 @@ class EmailAddress private constructor(value: String) : SimpleType<String>(value
 //type ZipCode = private ZipCode of string
 class ZipCode private constructor(value: String) : SimpleType<String>(value) {
     companion object {
-        fun validate(zip: String): ValidatedNel<ValidationError, ZipCode> =
-            validateRegExp("\\d{5}", zip).bimap(::nonEmptyListOf, ::ZipCode)
+        fun validate(zip: String): EitherNel<ValidationError, ZipCode> =
+            validateRegExp("\\d{5}", zip).map(::ZipCode).mapLeft(::nonEmptyListOf)
 
         fun create(zip: String): ZipCode = validate(zip).getOrElse { throw ValidationException(zip) }
     }
@@ -62,8 +63,8 @@ abstract class SimpleType<T : Any> protected constructor(val value: T) {
 //type OrderId = private OrderId of string
 class OrderId private constructor(value: String) : SimpleType<String>(value) {
     companion object {
-        fun validate(id: String): ValidatedNel<ValidationError, OrderId> =
-            validateStringLength(1, 10, id).bimap(::nonEmptyListOf, ::OrderId)
+        fun validate(id: String): EitherNel<ValidationError, OrderId> =
+            validateStringLength(1, 10, id).map(::OrderId).mapLeft(::nonEmptyListOf)
 
         fun create(id: String): OrderId = validate(id).getOrElse { throw ValidationException(id) }
     }
@@ -73,8 +74,8 @@ class OrderId private constructor(value: String) : SimpleType<String>(value) {
 //type OrderLineId = private OrderLineId of string
 class OrderLineId private constructor(value: String) : SimpleType<String>(value) {
     companion object {
-        fun validate(id: String): ValidatedNel<ValidationError, OrderLineId> =
-            validateStringLength(1, 10, id).bimap(::nonEmptyListOf, ::OrderLineId)
+        fun validate(id: String): EitherNel<ValidationError, OrderLineId> =
+            validateStringLength(1, 10, id).map(::OrderLineId).mapLeft(::nonEmptyListOf)
 
         fun create(id: String): OrderLineId = validate(id).getOrElse { throw ValidationException(id) }
     }
@@ -84,8 +85,8 @@ class OrderLineId private constructor(value: String) : SimpleType<String>(value)
 //type WidgetCode = private WidgetCode of string
 class WidgetCode private constructor(value: String) : SimpleType<String>(value) {
     companion object {
-        fun validate(code: String): ValidatedNel<ValidationError, WidgetCode> =
-            validateRegExp("W\\d{4}", code).bimap(::nonEmptyListOf, ::WidgetCode)
+        fun validate(code: String): EitherNel<ValidationError, WidgetCode> =
+            validateRegExp("W\\d{4}", code).map(::WidgetCode).mapLeft(::nonEmptyListOf)
 
         fun create(code: String): WidgetCode = validate(code).getOrElse { throw ValidationException(code) }
     }
@@ -95,8 +96,10 @@ class WidgetCode private constructor(value: String) : SimpleType<String>(value) 
 //type GizmoCode = private GizmoCode of string
 class GizmoCode private constructor(value: String) : SimpleType<String>(value) {
     companion object {
-        fun validate(code: String): ValidatedNel<ValidationError, GizmoCode> =
-            validateRegExp("G\\d{3}", code).bimap(::nonEmptyListOf, ::GizmoCode)
+        fun validate(code: String): EitherNel<ValidationError, GizmoCode> =
+            validateRegExp("G\\d{3}", code)
+                .map(::GizmoCode)
+                .mapLeft(::nonEmptyListOf)
 
         fun create(code: String): GizmoCode = validate(code).getOrElse { throw ValidationException(code) }
     }
@@ -143,13 +146,13 @@ sealed class ProductCode {
         Error msg
          */
 
-        fun validate(code: String): ValidatedNel<ValidationError, ProductCode> =
+        fun validate(code: String): EitherNel<ValidationError, ProductCode> =
             if (StringUtils.startsWith(code, "W")) {
                 WidgetCode.validate(code).map(ProductCode::Widget)
             } else if (StringUtils.startsWith(code, "G")) {
                 GizmoCode.validate(code).map(ProductCode::Gizmo)
             } else {
-                ValidationError("Invalid product code: <$code>").invalidNel()
+                ValidationError("Left product code: <$code>").left().toEitherNel()
             }
     }
 
@@ -160,8 +163,8 @@ sealed class ProductCode {
 //type UnitQuantity = private UnitQuantity of int
 class UnitQuantity private constructor(value: Int) : SimpleType<Int>(value) {
     companion object {
-        fun validate(quantity: Int): ValidatedNel<ValidationError, UnitQuantity> =
-            validateIntInRange(1, 1000, quantity).bimap(::nonEmptyListOf, ::UnitQuantity)
+        fun validate(quantity: Int): EitherNel<ValidationError, UnitQuantity> =
+            validateIntInRange(1, 1000, quantity).map(::UnitQuantity).mapLeft(::nonEmptyListOf)
 
         fun create(quantity: Int): UnitQuantity =
             validate(quantity).getOrElse { throw ValidationException(quantity.toString()) }
@@ -175,9 +178,9 @@ class KilogramQuantity internal constructor(value: BigDecimal) : SimpleType<BigD
         private val min = BigDecimal("0.05")
         private val max = BigDecimal("100.00")
 
-        fun validate(quantity: BigDecimal): ValidatedNel<ValidationError, KilogramQuantity> {
+        fun validate(quantity: BigDecimal): EitherNel<ValidationError, KilogramQuantity> {
             return validateBigDecimalInRange(min, max, quantity)
-                .bimap(::nonEmptyListOf, ::KilogramQuantity)
+                .map(::KilogramQuantity).mapLeft(::nonEmptyListOf)
         }
 
         fun create(quantity: BigDecimal): KilogramQuantity =
@@ -226,7 +229,7 @@ sealed class OrderQuantity {
         |> Result.map OrderQuantity.Kilogram         // lift to OrderQuantity type
          */
 
-        fun validate(productCode: ProductCode, value: BigDecimal): ValidatedNel<ValidationError, OrderQuantity> =
+        fun validate(productCode: ProductCode, value: BigDecimal): EitherNel<ValidationError, OrderQuantity> =
             when (productCode) {
                 is Gizmo -> KilogramQuantity.validate(value).map(OrderQuantity::Kilogram)
                 //TODO: handle not exact int value as ValidationError
@@ -248,9 +251,9 @@ class Price private constructor(value: BigDecimal) : SimpleType<BigDecimal>(valu
         private val min = BigDecimal("0.00")
         private val max = BigDecimal("1000.00")
 
-        fun validate(amount: BigDecimal): ValidatedNel<ValidationError, Price> {
+        fun validate(amount: BigDecimal): EitherNel<ValidationError, Price> {
             return validateBigDecimalInRange(min, max, amount)
-                .bimap(::nonEmptyListOf, ::Price)
+                .map(::Price).mapLeft(::nonEmptyListOf)
         }
 
         fun create(amount: BigDecimal): Price =
@@ -268,9 +271,9 @@ class BillingAmount private constructor(value: BigDecimal) : SimpleType<BigDecim
         private val min = BigDecimal("0.00")
         private val max = BigDecimal("10000.00")
 
-        fun validate(amount: BigDecimal): ValidatedNel<ValidationError, BillingAmount> {
+        fun validate(amount: BigDecimal): EitherNel<ValidationError, BillingAmount> {
             return validateBigDecimalInRange(min, max, amount)
-                .bimap(::nonEmptyListOf, ::BillingAmount)
+                .map(::BillingAmount).mapLeft(::nonEmptyListOf)
         }
 
         fun create(amount: BigDecimal): BillingAmount =
@@ -301,67 +304,67 @@ data class PropertyValidationError(
     val message: String,
 )
 
-fun validateRegExp(pattern: String, value: String): Validated<ValidationError, String> =
+fun validateRegExp(pattern: String, value: String): Either<ValidationError, String> =
     if (Regex(pattern).matches(value)) {
-        Valid(value)
+        Right(value)
     } else {
-        Invalid(ValidationError("'$value' must match the pattern '$pattern'"))
+        Left(ValidationError("'$value' must match the pattern '$pattern'"))
     }
 
-fun validateStringLength(min: Int, max: Int, value: String): Validated<ValidationError, String> {
+fun validateStringLength(min: Int, max: Int, value: String): Either<ValidationError, String> {
     val length = value.length
     return if ((length >= min) && (length <= max)) {
-        Valid(value)
+        Right(value)
     } else {
-        Invalid(ValidationError("The length of <$value> should be between <$min> and <$max>"))
+        Left(ValidationError("The length of <$value> should be between <$min> and <$max>"))
     }
 }
 
-fun validateNullableStringLength(min: Int, max: Int, value: String?): Validated<ValidationError, String?> {
+fun validateNullableStringLength(min: Int, max: Int, value: String?): Either<ValidationError, String?> {
     if (value == null) {
-        return value.valid()
+        return value.right()
     }
     val length = value.length
     return if ((length >= min) && (length <= max)) {
-        Valid(value)
+        Right(value)
     } else {
-        Invalid(ValidationError("The <$value> should be <null> or its length should be between <$min> and <$max>"))
+        Left(ValidationError("The <$value> should be <null> or its length should be between <$min> and <$max>"))
     }
 }
 
-fun validateIntInRange(min: Int, max: Int, value: Int): Validated<ValidationError, Int> =
+fun validateIntInRange(min: Int, max: Int, value: Int): Either<ValidationError, Int> =
     if ((value >= min) && (value <= max)) {
-        Valid(value)
+        Right(value)
     } else {
-        Invalid(ValidationError("The <$value> should be between <$min> and <$max>"))
+        Left(ValidationError("The <$value> should be between <$min> and <$max>"))
     }
 
 fun validateBigDecimalInRange(
     min: BigDecimal,
     max: BigDecimal,
     value: BigDecimal,
-): Validated<ValidationError, BigDecimal> =
+): Either<ValidationError, BigDecimal> =
     if ((value >= min) && (value <= max)) {
-        Valid(value)
+        Right(value)
     } else {
-        Invalid(ValidationError("The <$value> should be between <$min> and <$max>"))
+        Left(ValidationError("The <$value> should be between <$min> and <$max>"))
     }
 
 val validateString50 = ::validateStringLength.partially1(1).partially1(50)
 
 val validateNullableString50 = ::validateNullableStringLength.partially1(1).partially1(50)
 
-fun <V> Validated<ValidationError, V>.assign(property: Property): ValidatedNel<PropertyValidationError, V> = this
+fun <V> Either<ValidationError, V>.assign(property: Property): EitherNel<PropertyValidationError, V> = this
     .mapLeft { error -> PropertyValidationError(nonEmptyListOf(property), error.message) }
     .mapLeft(::nonEmptyListOf)
 
 @JvmName("nestedValidationErrorV")
-fun <V> ValidatedNel<ValidationError, V>.assign(property: Property): ValidatedNel<PropertyValidationError, V> = this
+fun <V> EitherNel<ValidationError, V>.assign(property: Property): EitherNel<PropertyValidationError, V> = this
     .mapLeft { errors ->
         errors.map { error -> PropertyValidationError(nonEmptyListOf(property), error.message) }
     }
 
-fun <V> ValidatedNel<PropertyValidationError, V>.prepend(property: Property): ValidatedNel<PropertyValidationError, V> =
+fun <V> EitherNel<PropertyValidationError, V>.prepend(property: Property): EitherNel<PropertyValidationError, V> =
     this
         .mapLeft { errors ->
             errors.map { error -> PropertyValidationError(Nel(property, error.path), error.message) }

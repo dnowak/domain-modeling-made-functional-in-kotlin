@@ -27,7 +27,7 @@ type CheckAddressExists =
     UnvalidatedAddress -> AsyncResult<CheckedAddress,AddressValidationError>
 
 // ---------------------------
-// Validated Order 
+// Either Order
 // ---------------------------
 
 type PricingMethod =

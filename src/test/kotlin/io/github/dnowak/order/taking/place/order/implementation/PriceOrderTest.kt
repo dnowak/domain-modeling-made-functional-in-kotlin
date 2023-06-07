@@ -2,6 +2,7 @@ package io.github.dnowak.order.taking.place.order.implementation
 
 import arrow.core.Either
 import arrow.core.partially1
+import arrow.core.Either.Right
 import arrow.core.right
 import io.github.dnowak.order.taking.common.Price
 import io.github.dnowak.order.taking.place.order.PricedOrder
