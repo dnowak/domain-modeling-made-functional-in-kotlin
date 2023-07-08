@@ -1,6 +1,7 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
 import arrow.core.curried
+import arrow.core.partially1
 import io.github.dnowak.order.taking.common.BillingAmount
 import io.github.dnowak.order.taking.place.order.BillableOrderPlaced
 import io.github.dnowak.order.taking.place.order.OrderAcknowledgmentSent
@@ -20,7 +21,9 @@ internal class TestNotification : DescribeSpec({
         val createOrderAcknowledgementLetter: CreateOrderAcknowledgementLetter = mockk()
         val sendAcknowledgement: SendOrderAcknowledgment = mockk()
         val acknowledgeOrder: AcknowledgeOrder =
-            ::acknowledgeOrder.curried()(createOrderAcknowledgementLetter)(sendAcknowledgement)
+            ::acknowledgeOrder
+                .partially1(createOrderAcknowledgementLetter)
+                .partially1(sendAcknowledgement)
 
         val letter = HtmlString("ack letter")
         val fixture = OrderFixture

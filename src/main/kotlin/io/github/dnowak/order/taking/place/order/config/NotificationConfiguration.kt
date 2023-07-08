@@ -1,6 +1,7 @@
 package io.github.dnowak.order.taking.place.order.config
 
 import arrow.core.curried
+import arrow.core.partially1
 import io.github.dnowak.order.taking.place.order.implementation.AcknowledgeOrder
 import io.github.dnowak.order.taking.place.order.implementation.CreateOrderAcknowledgementLetter
 import io.github.dnowak.order.taking.place.order.implementation.HtmlString
@@ -23,5 +24,7 @@ class NotificationConfiguration {
     fun acknowledgeOrderFun(
         createOrderAcknowledgementLetter: CreateOrderAcknowledgementLetter,
         sendOrderAcknowledgment: SendOrderAcknowledgment,
-    ): AcknowledgeOrder = ::acknowledgeOrder.curried()(createOrderAcknowledgementLetter)(sendOrderAcknowledgment)
+    ): AcknowledgeOrder = ::acknowledgeOrder
+        .partially1(createOrderAcknowledgementLetter)
+        .partially1(sendOrderAcknowledgment)
 }

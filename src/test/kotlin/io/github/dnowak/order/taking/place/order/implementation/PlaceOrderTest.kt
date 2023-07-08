@@ -1,31 +1,14 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
-import arrow.core.Either
-import arrow.core.Either.Left
-import arrow.core.curried
-import arrow.core.left
-import arrow.core.nel
-import arrow.core.right
-import arrow.core.validNel
+import arrow.core.*
 import io.github.dnowak.order.taking.common.Property
 import io.github.dnowak.order.taking.common.PropertyValidationError
-import io.github.dnowak.order.taking.place.order.OrderAcknowledgmentSent
-import io.github.dnowak.order.taking.place.order.PlaceOrder
-import io.github.dnowak.order.taking.place.order.PlaceOrderError
-import io.github.dnowak.order.taking.place.order.PlaceOrderEvent
-import io.github.dnowak.order.taking.place.order.PricedOrder
-import io.github.dnowak.order.taking.place.order.PricingError
-import io.github.dnowak.order.taking.place.order.UnvalidatedOrder
+import io.github.dnowak.order.taking.place.order.*
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import io.mockk.clearAllMocks
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 
 internal class PlaceOrderTest : DescribeSpec({
     beforeTest { clearAllMocks() }
@@ -35,7 +18,11 @@ internal class PlaceOrderTest : DescribeSpec({
         val acknowledgeOrder: AcknowledgeOrder = mockk()
         val createEvents: CreateEvents = mockk()
 
-        val placeOrder: PlaceOrder = ::placeOrder.curried()(validateOrder)(priceOrder)(acknowledgeOrder)(createEvents)
+        val placeOrder: PlaceOrder = ::placeOrder
+            .partially1(validateOrder)
+            .partially1(priceOrder)
+            .partially1(acknowledgeOrder)
+            .partially1(createEvents)
 
         val validatedOrder: ValidatedOrder = mockk()
         val pricedOrder: PricedOrder = mockk()
