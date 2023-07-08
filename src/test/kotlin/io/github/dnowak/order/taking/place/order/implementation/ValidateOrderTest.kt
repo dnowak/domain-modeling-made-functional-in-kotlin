@@ -1,29 +1,14 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
-import arrow.core.EitherNel
-import arrow.core.curried
-import arrow.core.flatMap
-import arrow.core.left
-import arrow.core.nel
-import arrow.core.nonEmptyListOf
-import arrow.core.partially1
-import arrow.core.right
-import arrow.core.toEitherNel
-import io.github.dnowak.order.taking.common.OrderLineId
-import io.github.dnowak.order.taking.common.OrderQuantity
-import io.github.dnowak.order.taking.common.ProductCode
-import io.github.dnowak.order.taking.common.Property
-import io.github.dnowak.order.taking.common.PropertyValidationError
-import io.github.dnowak.order.taking.common.ValidationError
+import arrow.core.*
+import io.github.dnowak.order.taking.common.*
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.collections.shouldExist
-import io.kotest.matchers.collections.shouldHaveSize
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -37,7 +22,10 @@ internal class ValidateOrderTest : DescribeSpec({
         val validateAddress: ValidateAddress = mockk()
         val validateOrderLine: ValidateOrderLine = mockk()
         val validate: ValidateOrder =
-            ::validateOrder.curried()(validateCustomerInfo)(validateAddress)(validateOrderLine)
+            ::validateOrder
+                .partially1(validateCustomerInfo)
+                .partially1(validateAddress)
+                .partially1(validateOrderLine)
 
         beforeTest {
             every { validateCustomerInfo(fixture.unvalidatedCustomerInfo) } returns fixture.validatedCustomerInfo.right()
@@ -121,7 +109,10 @@ internal class ValidateOrderTest : DescribeSpec({
             }
 
             val validateLine: ValidateOrderLine =
-                ::toOrderLine.curried()(OrderLineId::validate)(validateProductCode)(OrderQuantity::validate)
+                ::toOrderLine
+                    .partially1(OrderLineId::validate)
+                    .partially1(validateProductCode)
+                    .partially1(OrderQuantity::validate)
 
             validateOrder(
                 ::validateCustomerInfo,
@@ -134,8 +125,10 @@ internal class ValidateOrderTest : DescribeSpec({
     describe("validateOrderLine") {
         val validateProductCode: ValidateProductCode = mockk()
         //TODO: mock the rest of validations
-        val validate: ValidateOrderLine =
-            ::toOrderLine.curried()(OrderLineId::validate)(validateProductCode)(OrderQuantity::validate)
+        val validate: ValidateOrderLine = ::toOrderLine
+            .partially1(OrderLineId::validate)
+            .partially1(validateProductCode)
+            .partially1(OrderQuantity::validate)
         context("Right line") {
             lateinit var result: EitherNel<PropertyValidationError, ValidatedOrderLine>
             beforeTest {
@@ -152,7 +145,8 @@ internal class ValidateOrderTest : DescribeSpec({
             lateinit var result: EitherNel<PropertyValidationError, ValidatedOrderLine>
             val error = ValidationError("Left code")
             beforeTest {
-                every { validateProductCode(fixture.unvalidatedOrderLine1.productCode) } returns error.left().toEitherNel()
+                every { validateProductCode(fixture.unvalidatedOrderLine1.productCode) } returns error.left()
+                    .toEitherNel()
 
                 result = validate(fixture.unvalidatedOrderLine1)
             }
