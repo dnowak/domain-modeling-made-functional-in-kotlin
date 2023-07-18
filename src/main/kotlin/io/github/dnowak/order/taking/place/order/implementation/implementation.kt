@@ -3,7 +3,6 @@ package io.github.dnowak.order.taking.place.order.implementation
 import arrow.core.Either
 import arrow.core.Either.Companion.zipOrAccumulate
 import arrow.core.EitherNel
-import arrow.core.NonEmptyList
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.flatMap
@@ -48,7 +47,7 @@ import io.github.dnowak.order.taking.place.order.UnvalidatedAddress
 import io.github.dnowak.order.taking.place.order.UnvalidatedCustomerInfo
 import io.github.dnowak.order.taking.place.order.UnvalidatedOrder
 import io.github.dnowak.order.taking.place.order.UnvalidatedOrderLine
-import io.github.dnowak.util.arrow.unique
+import io.github.dnowak.util.arrow.distinct
 import mu.KotlinLogging
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -269,7 +268,11 @@ fun validateCustomerInfo(info: UnvalidatedCustomerInfo): EitherNel<PropertyValid
         .assign(Property("lastName"))
     val validatedEmailAddress = EmailAddress.validate(info.emailAddress)
         .assign(Property("emailAddress"))
-    return validatedFirstName.zip(validatedLastName, validatedEmailAddress) { firstName, lastName, emailAddress ->
+    return zipOrAccumulate(
+        validatedFirstName,
+        validatedLastName,
+        validatedEmailAddress
+    ) { firstName, lastName, emailAddress ->
         CustomerInfo(PersonalName(firstName, lastName), emailAddress)
     }
 }
@@ -329,7 +332,8 @@ fun validateAddress(address: CheckedAddress): EitherNel<PropertyValidationError,
     val validatedZipCode = ZipCode.validate(address.zipCode)
         .assign(Property("zipCode"))
 
-    return validatedAddresLine1.zip(
+    return zipOrAccumulate(
+        validatedAddresLine1,
         validatedAddressLine2,
         validatedAddressLine3,
         validatedAddressLine4,
@@ -472,7 +476,7 @@ fun validateOrderLine(
 
     return either {
         ValidatedOrderLine(validatedOrderLineId.bind(), validatedProductCode.bind(), validatedQuantity.bind())
-    }.mapLeft(::unique)
+    }.mapLeft(::distinct)
 }
 
 /*
@@ -582,7 +586,6 @@ fun priceOrderLine(getProductPrice: GetProductPrice, line: ValidatedOrderLine): 
 
 private operator fun Price.times(quantity: OrderQuantity): Either<PricingError, Price> =
     Price.validate(value.multiply(quantity.quantity).setScale(2, RoundingMode.HALF_UP))
-        .toEither()
         .mapLeft { errors -> PricingError(errors.map { error -> error.message }.joinToString()) }
 
 /*
@@ -615,7 +618,7 @@ fun priceOrder(priceOrderLine: PriceOrderLine, order: ValidatedOrder): Either<Pr
     either {
         val lines = order.lines.traverseEither(priceOrderLine).bind()
         val billingAmount = BillingAmount.validate(lines.sumOf { it.linePrice.value }.setScale(2, RoundingMode.HALF_UP))
-            .toEither().mapLeft { errors -> PricingError("amountToBill: " + errors.map { it.message }.joinToString()) }
+            .mapLeft { errors -> PricingError("amountToBill: " + errors.map { it.message }.joinToString()) }
             .bind()
         order.run {
             PricedOrder(orderId, customerInfo, shippingAddress, billingAddress, billingAmount, lines)

@@ -8,5 +8,5 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class PricingConfiguration {
     @Bean
-    fun getProductPriceFun(): GetProductPrice = { productCode -> Price.create("10") }
+    fun getProductPriceFun(): GetProductPrice = { _ -> Price.create("10") }
 }

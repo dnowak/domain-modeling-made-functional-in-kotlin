@@ -36,7 +36,7 @@ class OrderController(
 
     @GetMapping("/{orderId}")
     fun order(@PathVariable orderId: String): ResponseEntity<Any> =
-        OrderId.validate(orderId).toEither().map(findOrder).fold(
+        OrderId.validate(orderId).map(findOrder).fold(
             { errors ->
                 ResponseEntity.badRequest().body(errors.map(ValidationError::message).joinToString())
             }, { maybeOrder ->
