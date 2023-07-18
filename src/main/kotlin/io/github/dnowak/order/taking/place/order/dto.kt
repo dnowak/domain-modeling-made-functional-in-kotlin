@@ -1,5 +1,7 @@
 package io.github.dnowak.order.taking.place.order
 
+import arrow.core.Either
+import arrow.core.Either.Companion.zipOrAccumulate
 import arrow.core.EitherNel
 import arrow.core.zip
 import io.github.dnowak.order.taking.common.Address
@@ -88,7 +90,8 @@ fun toCustomerInfo(dto: CustomerInfoDto): EitherNel<PropertyValidationError, Cus
     val validatedEmailAddress = EmailAddress.validate(dto.emailAddress)
         .assign(Property("emailAddress"))
 
-    return validatedFirstName.zip(
+    return zipOrAccumulate(
+        validatedFirstName,
         validatedLastName,
         validatedEmailAddress,
     ) { firstName, lastName, emailAddress ->
@@ -222,7 +225,8 @@ fun toAddress(dto: AddressDto): EitherNel<PropertyValidationError, Address> {
     val validatedZipCode = ZipCode.validate(dto.zipCode)
         .assign(Property("zipCode"))
 
-    return validatedLine1.zip(
+    return zipOrAccumulate(
+        validatedLine1,
         validatedLine2,
         validatedLine3,
         validatedLine4,

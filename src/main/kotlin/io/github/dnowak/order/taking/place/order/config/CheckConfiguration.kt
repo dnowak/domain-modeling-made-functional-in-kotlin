@@ -8,5 +8,5 @@ import org.springframework.context.annotation.Configuration
 class CheckConfiguration {
 
     @Bean
-    fun checkProductCodeExists(): CheckProductCodeExists = { code -> true }
+    fun checkProductCodeExists(): CheckProductCodeExists = { _ -> true }
 }

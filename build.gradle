@@ -32,9 +32,10 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$kotlin_coroutines_version"
 
 
-    implementation platform('io.arrow-kt:arrow-stack:1.2.0-RC')
+    implementation platform('io.arrow-kt:arrow-stack:1.2.0')
     implementation 'io.arrow-kt:arrow-core'
     implementation 'io.arrow-kt:arrow-fx-coroutines'
+    implementation 'app.cash.quiver:lib:0.3.0'
 
     implementation 'io.github.microutils:kotlin-logging:2.0.11'
 
