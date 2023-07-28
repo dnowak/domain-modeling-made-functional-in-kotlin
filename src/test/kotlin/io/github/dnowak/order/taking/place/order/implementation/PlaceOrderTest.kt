@@ -7,7 +7,6 @@ import io.github.dnowak.order.taking.place.order.*
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.shouldBe
 import io.mockk.*
 
 internal class PlaceOrderTest : DescribeSpec({
@@ -44,7 +43,7 @@ internal class PlaceOrderTest : DescribeSpec({
                 placeResult = placeOrder(unvalidatedOrder)
             }
             it("returns events") {
-                placeResult.shouldBeRight() shouldBe events
+                placeResult shouldBeRight events
             }
             it("validates order") {
                 coVerify { validateOrder(unvalidatedOrder) }
@@ -70,7 +69,7 @@ internal class PlaceOrderTest : DescribeSpec({
                 placeResult = placeOrder(unvalidatedOrder)
             }
             it("returns error") {
-                placeResult.shouldBeLeft() shouldBe PlaceOrderError.Validation(validationErrors)
+                placeResult shouldBeLeft PlaceOrderError.Validation(validationErrors)
             }
         }
         context("pricing error") {
@@ -84,7 +83,7 @@ internal class PlaceOrderTest : DescribeSpec({
                 placeResult = placeOrder(unvalidatedOrder)
             }
             it("returns error") {
-                placeResult.shouldBeLeft() shouldBe PlaceOrderError.Pricing(pricingError)
+                placeResult shouldBeLeft PlaceOrderError.Pricing(pricingError)
             }
         }
     }

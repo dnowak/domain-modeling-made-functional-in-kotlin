@@ -2,7 +2,6 @@ package io.github.dnowak.order.taking.place.order.implementation
 
 import arrow.core.Either
 import arrow.core.partially1
-import arrow.core.Either.Right
 import arrow.core.right
 import io.github.dnowak.order.taking.common.Price
 import io.github.dnowak.order.taking.place.order.PricedOrder
@@ -10,7 +9,6 @@ import io.github.dnowak.order.taking.place.order.PricingError
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.every
 import io.mockk.mockk
@@ -29,7 +27,7 @@ internal class PriceOrderTest : DescribeSpec({
                 result = priceOrder(fixture.validatedOrder)
             }
             it("returns priced order") {
-                result.shouldBeRight() shouldBe fixture.pricedOrder
+                result shouldBeRight fixture.pricedOrder
             }
         }
         context("billing amount out of range") {
@@ -56,7 +54,7 @@ internal class PriceOrderTest : DescribeSpec({
                 every { getProductPrice(fixture.validatedOrderLine1.productCode)} returns Price.create("1.12")
             }
             it("returns priced line") {
-                priceOrderLine(fixture.validatedOrderLine1).shouldBeRight() shouldBe fixture.pricedOrderLine1
+                priceOrderLine(fixture.validatedOrderLine1) shouldBeRight fixture.pricedOrderLine1
             }
         }
         context("line price out of range") {
