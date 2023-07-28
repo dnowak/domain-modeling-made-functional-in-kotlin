@@ -126,14 +126,19 @@ value class WidgetCode private constructor(val value: String) {
 
 /// The codes for Gizmos start with a "G" and then three digits.
 //type GizmoCode = private GizmoCode of string
-class GizmoCode private constructor(value: String) : SimpleType<String>(value) {
+@JvmInline
+value class GizmoCode private constructor(val value: String) {
     companion object {
         fun validate(code: String): EitherNel<ValidationError, GizmoCode> =
             validateRegExp("G\\d{3}", code)
                 .map(::GizmoCode)
                 .mapLeft(::nonEmptyListOf)
 
-        fun create(code: String): GizmoCode = validate(code).getOrElse { throw ValidationException(code) }
+        fun create(code: String): GizmoCode = validate(code)
+            .fold(
+                { errors -> throw ValidationException("Invalid gizmo code: <$code> - errors: <${messages(errors)}>") },
+                ::identity
+            )
     }
 }
 
