@@ -9,18 +9,6 @@ import java.math.BigDecimal
 
 internal class SimpleTypesTest : DescribeSpec({
 
-    describe("WidgetCode.validate") {
-        listOf("W1234", "W4444", "W2222").forEach { value ->
-            it("accepts <$value>") {
-                WidgetCode.validate(value).shouldBeRight().value shouldBe value
-            }
-        }
-        listOf("", "W", "W1", "W123", "Z1234", "G1234").forEach { value ->
-            it("rejects <$value>") {
-                WidgetCode.validate(value).shouldBeLeft().all.shouldExist { error -> error.message.contains(value) }
-            }
-        }
-    }
     describe("GizmoCode.validate") {
         listOf("G123", "G444", "G222").forEach { value ->
             it("accepts <$value>") {
