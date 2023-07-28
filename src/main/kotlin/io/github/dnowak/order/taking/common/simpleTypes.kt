@@ -1,29 +1,29 @@
 package io.github.dnowak.order.taking.common
 
-import arrow.core.Either
+import arrow.core.*
 import arrow.core.Either.Left
 import arrow.core.Either.Right
-import arrow.core.EitherNel
-import arrow.core.Nel
-import arrow.core.getOrElse
-import arrow.core.left
-import arrow.core.nonEmptyListOf
-import arrow.core.partially1
-import arrow.core.right
-import arrow.core.toEitherNel
 import io.github.dnowak.order.taking.common.ProductCode.Gizmo
 import io.github.dnowak.order.taking.common.ProductCode.Widget
 import org.apache.commons.lang3.StringUtils
 import java.math.BigDecimal
 
+private fun messages(errors: NonEmptyList<ValidationError>): String =
+    errors.map(ValidationError::message).joinToString()
+
 /// An email address
 //type EmailAddress = private EmailAddress of string
-class EmailAddress private constructor(value: String) : SimpleType<String>(value) {
+@JvmInline
+value class EmailAddress private constructor(val value: String) {
     companion object {
         fun validate(email: String): EitherNel<ValidationError, EmailAddress> =
             validateRegExp(".+@.+", email).map(::EmailAddress).mapLeft(::nonEmptyListOf)
 
-        fun create(email: String): EmailAddress = validate(email).getOrElse { throw ValidationException(email) }
+        fun create(email: String): EmailAddress = validate(email)
+            .fold(
+                { errors -> throw ValidationException("Invalid email: <$email> - errors: <${messages(errors)}>") },
+                ::identity
+            )
     }
 }
 
