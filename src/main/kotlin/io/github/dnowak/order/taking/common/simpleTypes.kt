@@ -110,12 +110,17 @@ value class OrderLineId private constructor(val value: String) {
 
 /// The codes for Widgets start with a "W" and then four digits
 //type WidgetCode = private WidgetCode of string
-class WidgetCode private constructor(value: String) : SimpleType<String>(value) {
+@JvmInline
+value class WidgetCode private constructor(val value: String) {
     companion object {
         fun validate(code: String): EitherNel<ValidationError, WidgetCode> =
             validateRegExp("W\\d{4}", code).map(::WidgetCode).mapLeft(::nonEmptyListOf)
 
-        fun create(code: String): WidgetCode = validate(code).getOrElse { throw ValidationException(code) }
+        fun create(code: String): WidgetCode = validate(code)
+            .fold(
+                { errors -> throw ValidationException("Invalid widget code: <$code> - errors: <${messages(errors)}>") },
+                ::identity
+            )
     }
 }
 
