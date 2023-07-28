@@ -29,12 +29,17 @@ value class EmailAddress private constructor(val value: String) {
 
 /// A zip code
 //type ZipCode = private ZipCode of string
-class ZipCode private constructor(value: String) : SimpleType<String>(value) {
+@JvmInline
+value class ZipCode private constructor(val value: String) {
     companion object {
         fun validate(zip: String): EitherNel<ValidationError, ZipCode> =
             validateRegExp("\\d{5}", zip).map(::ZipCode).mapLeft(::nonEmptyListOf)
 
-        fun create(zip: String): ZipCode = validate(zip).getOrElse { throw ValidationException(zip) }
+        fun create(zip: String): ZipCode = validate(zip)
+            .fold(
+                { errors -> throw ValidationException("Invalid zip code: <$zip> - errors: <${messages(errors)}>") },
+                ::identity
+            )
     }
 }
 
