@@ -1,8 +1,18 @@
 package io.github.dnowak.order.taking.common
 
-import arrow.core.*
+import arrow.core.Either
 import arrow.core.Either.Left
 import arrow.core.Either.Right
+import arrow.core.EitherNel
+import arrow.core.Nel
+import arrow.core.NonEmptyList
+import arrow.core.getOrElse
+import arrow.core.identity
+import arrow.core.left
+import arrow.core.nonEmptyListOf
+import arrow.core.partially1
+import arrow.core.right
+import arrow.core.toEitherNel
 import io.github.dnowak.order.taking.common.ProductCode.Gizmo
 import io.github.dnowak.order.taking.common.ProductCode.Widget
 import org.apache.commons.lang3.StringUtils
@@ -43,6 +53,7 @@ value class ZipCode private constructor(val value: String) {
     }
 }
 
+@Deprecated("Switch to value class")
 abstract class SimpleType<T : Any> protected constructor(val value: T) {
     override fun hashCode(): Int {
         return value.hashCode()
@@ -66,12 +77,18 @@ abstract class SimpleType<T : Any> protected constructor(val value: T) {
 
 /// An Id for Orders. Constrained to be a non-empty string < 10 chars
 //type OrderId = private OrderId of string
-class OrderId private constructor(value: String) : SimpleType<String>(value) {
+@JvmInline
+value class OrderId private constructor(val value: String) {
     companion object {
         fun validate(id: String): EitherNel<ValidationError, OrderId> =
             validateStringLength(1, 10, id).map(::OrderId).mapLeft(::nonEmptyListOf)
 
-        fun create(id: String): OrderId = validate(id).getOrElse { throw ValidationException(id) }
+        fun create(id: String): OrderId = validate(id)
+            .fold(
+                { errors -> throw ValidationException("Invalid order id: <$id> - errors: <${messages(errors)}>") },
+                ::identity
+            )
+
     }
 }
 
