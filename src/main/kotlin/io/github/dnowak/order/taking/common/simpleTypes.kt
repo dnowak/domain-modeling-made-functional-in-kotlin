@@ -94,12 +94,17 @@ value class OrderId private constructor(val value: String) {
 
 /// An Id for OrderLines. Constrained to be a non-empty string < 10 chars
 //type OrderLineId = private OrderLineId of string
-class OrderLineId private constructor(value: String) : SimpleType<String>(value) {
+@JvmInline
+value class OrderLineId private constructor(val value: String) {
     companion object {
         fun validate(id: String): EitherNel<ValidationError, OrderLineId> =
             validateStringLength(1, 10, id).map(::OrderLineId).mapLeft(::nonEmptyListOf)
 
-        fun create(id: String): OrderLineId = validate(id).getOrElse { throw ValidationException(id) }
+        fun create(id: String): OrderLineId = validate(id)
+            .fold(
+                { errors -> throw ValidationException("Invalid order line id: <$id> - errors: <${messages(errors)}>") },
+                ::identity
+            )
     }
 }
 
