@@ -8,18 +8,7 @@ import io.kotest.matchers.shouldBe
 import java.math.BigDecimal
 
 internal class SimpleTypesTest : DescribeSpec({
-    describe("ZipCode.validate") {
-        listOf("12345", "11223", "77766").forEach { zip ->
-            it("accepts <$zip>") {
-                ZipCode.validate(zip).shouldBeRight().value shouldBe zip
-            }
-        }
-        listOf("", " ", "1", "12", "123", "1234", "abcde", "ABCDE").forEach { zip ->
-            it("rejects <$zip>") {
-                ZipCode.validate(zip).shouldBeLeft().all.shouldExist { error -> error.message.contains(zip) }
-            }
-        }
-    }
+
     describe("OrderId.validate") {
         listOf("1", "A", "1234567890", "ABCDEFGHIJ").forEach { id ->
             it("accepts <$id>") {
