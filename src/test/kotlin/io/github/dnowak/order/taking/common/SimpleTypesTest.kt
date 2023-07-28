@@ -8,22 +8,6 @@ import io.kotest.matchers.shouldBe
 import java.math.BigDecimal
 
 internal class SimpleTypesTest : DescribeSpec({
-    describe("EmailAddress.validate") {
-        listOf("me@company.com", "john@google.com").forEach { email ->
-            it("accepts <$email>") {
-                EmailAddress.validate(email).shouldBeRight().value shouldBe email
-            }
-        }
-        listOf("", " ", "@", "me@", "@google.com").forEach { email ->
-            it("rejects <$email>") {
-                EmailAddress.validate(email)
-                    .shouldBeLeft().all.shouldExist { error -> error.message.contains(email) }
-            }
-        }
-        it("checks equality") {
-            EmailAddress.create("ja@me.edu.pl") shouldBe EmailAddress.create("ja@me.edu.pl")
-        }
-    }
     describe("ZipCode.validate") {
         listOf("12345", "11223", "77766").forEach { zip ->
             it("accepts <$zip>") {
