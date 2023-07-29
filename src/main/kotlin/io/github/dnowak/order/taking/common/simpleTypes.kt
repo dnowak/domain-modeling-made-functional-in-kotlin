@@ -223,7 +223,8 @@ value class UnitQuantity private constructor(val value: Int) {
 
 /// Constrained to be a decimal between 0.05 and 100.00
 //type KilogramQuantity = private KilogramQuantity of decimal
-class KilogramQuantity internal constructor(value: BigDecimal) : SimpleType<BigDecimal>(value) {
+@JvmInline
+value class KilogramQuantity internal constructor(val value: BigDecimal) {
     companion object {
         private val min = BigDecimal("0.05")
         private val max = BigDecimal("100.00")
@@ -233,8 +234,11 @@ class KilogramQuantity internal constructor(value: BigDecimal) : SimpleType<BigD
                 .map(::KilogramQuantity).mapLeft(::nonEmptyListOf)
         }
 
-        fun create(quantity: BigDecimal): KilogramQuantity =
-            validate(quantity).getOrElse { throw ValidationException(quantity.toString()) }
+        fun create(quantity: BigDecimal): KilogramQuantity = validate(quantity)
+            .fold(
+                { errors -> throw ValidationException("Invalid kilogram quantity: <$quantity> - errors: <${messages(errors)}>") },
+                ::identity
+            )
 
         fun create(quantity: String): KilogramQuantity =
             create((BigDecimal(quantity)))

@@ -8,36 +8,36 @@ import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.property.Arb
-import io.kotest.property.arbitrary.int
+import io.kotest.property.arbitrary.bigDecimal
 import io.kotest.property.assume
 import io.kotest.property.checkAll
 
-class UnitQuantityTest: FreeSpec( {
-    "UnitQuantity" - {
+class KilogramQuantityTest: FreeSpec( {
+    "KilogramQuantity" - {
         "validate" - {
             "accept" {
-                Arb.unitQuantityValue().checkAll {
-                    UnitQuantity.validate(it).shouldBeRight().value shouldBe it
+                Arb.kilogramQuantityValue().checkAll {
+                    KilogramQuantity.validate(it).shouldBeRight().value shouldBe it
                 }
             }
             "reject" {
-                Arb.int().checkAll {
-                    assume(invalidUnitQuantityValue(it))
-                    UnitQuantity.validate(it).shouldBeLeft().all.shouldExist { error -> error.message.contains("<$it>") }
+                Arb.bigDecimal().checkAll {
+                    assume(invalidKilogramQuantityValue(it))
+                    KilogramQuantity.validate(it).shouldBeLeft().all.shouldExist { error -> error.message.contains("<$it>") }
                 }
             }
         }
         "create" - {
             "accept" {
-                Arb.unitQuantityValue().checkAll {
-                    UnitQuantity.create(it).value shouldBe it
+                Arb.kilogramQuantityValue().checkAll {
+                    KilogramQuantity.create(it).value shouldBe it
                 }
             }
             "reject" {
-                Arb.int().checkAll {
-                    assume(!validUnitQuantityValue(it))
+                Arb.bigDecimal().checkAll {
+                    assume(invalidKilogramQuantityValue(it))
                     val exception = shouldThrow<ValidationException> {
-                       UnitQuantity.create(it)
+                       KilogramQuantity.create(it)
                     }
                     exception.message shouldContain "<$it>"
                 }

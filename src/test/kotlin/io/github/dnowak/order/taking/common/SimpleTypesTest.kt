@@ -9,21 +9,6 @@ import java.math.BigDecimal
 
 internal class SimpleTypesTest : DescribeSpec({
 
-    describe("KilogramQuantity.validate") {
-        listOf("0.05", "0.10", "0.5", "10.50", "99.99", "100.00").forEach { value ->
-            it("accepts <$value>") {
-                val kg = BigDecimal(value)
-                KilogramQuantity.validate(kg).shouldBeRight().value shouldBe kg
-            }
-        }
-        listOf("0.00", "0.01", "0.04", "100.01", "101.00", "1000.00").forEach { value ->
-            it("rejects <$value>") {
-                val kg = BigDecimal(value)
-                KilogramQuantity.validate(kg)
-                    .shouldBeLeft().all.shouldExist { error -> error.message.contains(value) }
-            }
-        }
-    }
     describe("Price.validate") {
         listOf("0.00", "0.01", "0.05", "0.10", "0.5", "10.50", "999.99", "1000.00").forEach { value ->
             it("accepts <$value>") {
