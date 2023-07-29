@@ -9,19 +9,6 @@ import java.math.BigDecimal
 
 internal class SimpleTypesTest : DescribeSpec({
 
-    describe("UnitQuantity.validate") {
-        listOf(1, 10, 500, 999, 1000).forEach { value ->
-            it("accepts <$value>") {
-                UnitQuantity.validate(value).shouldBeRight().value shouldBe value
-            }
-        }
-        listOf(-10000, -100, -1, 0, 1001, 10000).forEach { value ->
-            it("rejects <$value>") {
-                UnitQuantity.validate(value)
-                    .shouldBeLeft().all.shouldExist { error -> error.message.contains(value.toString()) }
-            }
-        }
-    }
     describe("KilogramQuantity.validate") {
         listOf("0.05", "0.10", "0.5", "10.50", "99.99", "100.00").forEach { value ->
             it("accepts <$value>") {

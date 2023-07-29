@@ -17,12 +17,12 @@ class ProductCodeTest: FreeSpec({
     "ProductCode" - {
         "validate" - {
             "widget code" {
-                Arb.widgetCode().checkAll { code ->
+                Arb.widgetCodeValue().checkAll { code ->
                     ProductCode.validate(code) shouldBeRight ProductCode.Widget(WidgetCode.create(code))
                 }
             }
             "gizmo code" {
-                Arb.gizmoCode().checkAll { code ->
+                Arb.gizmoCodeValue().checkAll { code ->
                     ProductCode.validate(code) shouldBeRight ProductCode.Gizmo(GizmoCode.create(code))
                 }
             }
@@ -38,12 +38,12 @@ class ProductCodeTest: FreeSpec({
         }
         "create" - {
             "widget code" {
-                Arb.widgetCode().checkAll { code ->
+                Arb.widgetCodeValue().checkAll { code ->
                     ProductCode.create(code) shouldBe ProductCode.Widget(WidgetCode.create(code))
                 }
             }
             "gizmo code" {
-                Arb.gizmoCode().checkAll { code ->
+                Arb.gizmoCodeValue().checkAll { code ->
                     ProductCode.create(code) shouldBe ProductCode.Gizmo(GizmoCode.create(code))
                 }
             }

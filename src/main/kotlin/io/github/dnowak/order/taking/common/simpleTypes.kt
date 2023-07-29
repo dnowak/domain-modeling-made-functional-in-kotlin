@@ -207,13 +207,17 @@ sealed interface ProductCode {
 
 /// Constrained to be a integer between 1 and 1000
 //type UnitQuantity = private UnitQuantity of int
-class UnitQuantity private constructor(value: Int) : SimpleType<Int>(value) {
+@JvmInline
+value class UnitQuantity private constructor(val value: Int) {
     companion object {
         fun validate(quantity: Int): EitherNel<ValidationError, UnitQuantity> =
             validateIntInRange(1, 1000, quantity).map(::UnitQuantity).mapLeft(::nonEmptyListOf)
 
-        fun create(quantity: Int): UnitQuantity =
-            validate(quantity).getOrElse { throw ValidationException(quantity.toString()) }
+        fun create(quantity: Int): UnitQuantity = validate(quantity)
+            .fold(
+                { errors -> throw ValidationException("Invalid unit quantity: <$quantity> - errors: <${messages(errors)}>") },
+                ::identity
+            )
     }
 }
 
