@@ -1,13 +1,28 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
-import arrow.core.*
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.nel
+import arrow.core.partially1
+import arrow.core.right
 import io.github.dnowak.order.taking.common.Property
 import io.github.dnowak.order.taking.common.PropertyValidationError
-import io.github.dnowak.order.taking.place.order.*
+import io.github.dnowak.order.taking.place.order.OrderAcknowledgmentSent
+import io.github.dnowak.order.taking.place.order.PlaceOrder
+import io.github.dnowak.order.taking.place.order.PlaceOrderError
+import io.github.dnowak.order.taking.place.order.PlaceOrderEvent
+import io.github.dnowak.order.taking.place.order.PricedOrder
+import io.github.dnowak.order.taking.place.order.PricingError
+import io.github.dnowak.order.taking.place.order.UnvalidatedOrder
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.DescribeSpec
-import io.mockk.*
+import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 
 internal class PlaceOrderTest : DescribeSpec({
     beforeTest { clearAllMocks() }

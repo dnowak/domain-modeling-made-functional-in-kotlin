@@ -236,7 +236,15 @@ value class KilogramQuantity internal constructor(val value: BigDecimal) {
 
         fun create(quantity: BigDecimal): KilogramQuantity = validate(quantity)
             .fold(
-                { errors -> throw ValidationException("Invalid kilogram quantity: <$quantity> - errors: <${messages(errors)}>") },
+                { errors ->
+                    throw ValidationException(
+                        "Invalid kilogram quantity: <$quantity> - errors: <${
+                            messages(
+                                errors
+                            )
+                        }>"
+                    )
+                },
                 ::identity
             )
 
@@ -300,23 +308,28 @@ sealed interface OrderQuantity {
 
 /// Constrained to be a decimal between 0.0 and 1000.00
 //type Price = private Price of decimal
+//TODO: implement as value class. Now it causes problems - https://github.com/dnowak/domain-modeling-made-functional-in-kotlin/issues/17
+//@JvmInline
+//value class Price private constructor(val value: BigDecimal) {
 class Price private constructor(value: BigDecimal) : SimpleType<BigDecimal>(value) {
     companion object {
         private val min = BigDecimal("0.00")
         private val max = BigDecimal("1000.00")
 
-        fun validate(amount: BigDecimal): EitherNel<ValidationError, Price> {
-            return validateBigDecimalInRange(min, max, amount)
+        fun validate(amount: BigDecimal): EitherNel<ValidationError, Price> =
+            validateBigDecimalInRange(min, max, amount)
                 .map(::Price).mapLeft(::nonEmptyListOf)
-        }
 
-        fun create(amount: BigDecimal): Price =
-            validate(amount).getOrElse { throw ValidationException(amount.toString()) }
+        fun create(amount: BigDecimal): Price = validate(amount)
+            .fold(
+                { errors -> throw ValidationException("Invalid price: <$amount> - errors: <${messages(errors)}>") },
+                ::identity
+            )
 
-        fun create(amount: String): Price =
-            create(BigDecimal(amount))
+        fun create(amount: String): Price = create(BigDecimal(amount))
     }
 }
+
 
 /// Constrained to be a decimal between 0.0 and 10000.00
 //type BillingAmount = private BillingAmount of decimal

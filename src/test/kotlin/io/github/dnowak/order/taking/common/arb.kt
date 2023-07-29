@@ -26,4 +26,8 @@ fun validKilogramQuantityValue(value: BigDecimal): Boolean = value in BigDecimal
 
 fun invalidKilogramQuantityValue(value: BigDecimal): Boolean = !validKilogramQuantityValue(value)
 
+fun Arb.Companion.priceValue(): Arb<BigDecimal> = Arb.bigDecimal(BigDecimal("0.00"), BigDecimal("100.00"))
 
+fun validPriceValue(value: BigDecimal): Boolean = value in BigDecimal("0.00")..BigDecimal("100.00")
+
+fun invalidPriceValue(value: BigDecimal): Boolean = !validPriceValue(value)
