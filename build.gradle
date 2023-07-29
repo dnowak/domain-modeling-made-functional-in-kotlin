@@ -21,6 +21,10 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    kotest_version = '5.6.2'
+}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect"
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
@@ -47,7 +51,8 @@ dependencies {
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlin_coroutines_version"
-    testImplementation "io.kotest:kotest-runner-junit5:5.6.2"
+    testImplementation "io.kotest:kotest-runner-junit5:$kotest_version"
+    testImplementation "io.kotest:kotest-property:$kotest_version"
     testImplementation "io.kotest.extensions:kotest-assertions-arrow:1.3.3"
     testImplementation 'io.mockk:mockk:1.13.5'
 }
