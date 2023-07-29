@@ -251,9 +251,9 @@ type OrderQuantity =
 | Unit of UnitQuantity
 | Kilogram of KilogramQuantity
  */
-sealed class OrderQuantity {
-    data class Unit(val value: UnitQuantity) : OrderQuantity()
-    data class Kilogram(val value: KilogramQuantity) : OrderQuantity()
+sealed interface OrderQuantity {
+    data class Unit(val value: UnitQuantity) : OrderQuantity
+    data class Kilogram(val value: KilogramQuantity) : OrderQuantity
 
     companion object {
         /*
