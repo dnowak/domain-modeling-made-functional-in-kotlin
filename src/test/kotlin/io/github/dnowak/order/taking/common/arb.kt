@@ -8,7 +8,11 @@ import java.math.BigDecimal
 
 fun Arb.Companion.gizmoCodeValue(): Arb<String> = Arb.int(0..999).map { "G" + it.toString().padStart(3, '0') }
 
+fun Arb.Companion.gizmoCode(): Arb<GizmoCode> = gizmoCodeValue().map { GizmoCode.create(it) }
+
 fun Arb.Companion.widgetCodeValue(): Arb<String> = Arb.int(0..9999).map { "W" + it.toString().padStart(4, '0') }
+
+fun Arb.Companion.widgetCode(): Arb<WidgetCode> = widgetCodeValue().map { WidgetCode.create(it) }
 
 fun Arb.Companion.unitQuantityValue(): Arb<Int> = Arb.int(1..1000)
 
