@@ -148,9 +148,12 @@ type ProductCode =
 | Widget of WidgetCode
 | Gizmo of GizmoCode
  */
-sealed class ProductCode {
-    data class Widget(val code: WidgetCode) : ProductCode()
-    data class Gizmo(val code: GizmoCode) : ProductCode()
+sealed interface ProductCode {
+    @JvmInline
+    value class Widget(val code: WidgetCode) : ProductCode
+
+    @JvmInline
+    value class Gizmo(val code: GizmoCode) : ProductCode
 
     companion object {
         /*
@@ -189,8 +192,14 @@ sealed class ProductCode {
             } else if (StringUtils.startsWith(code, "G")) {
                 GizmoCode.validate(code).map(ProductCode::Gizmo)
             } else {
-                ValidationError("Left product code: <$code>").left().toEitherNel()
+                ValidationError("Unknown product code: <$code>").left().toEitherNel()
             }
+
+        fun create(code: String): ProductCode = validate(code)
+            .fold(
+                { errors -> throw ValidationException("Invalid product code: <$code> - errors: <${messages(errors)}>") },
+                ::identity
+            )
     }
 
 
