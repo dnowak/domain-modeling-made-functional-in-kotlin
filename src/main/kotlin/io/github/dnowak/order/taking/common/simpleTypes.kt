@@ -27,7 +27,7 @@ private fun messages(errors: NonEmptyList<ValidationError>): String =
 value class EmailAddress private constructor(val value: String) {
     companion object {
         fun validate(email: String): EitherNel<ValidationError, EmailAddress> =
-            validateRegExp(".+@.+", email).map(::EmailAddress).mapLeft(::nonEmptyListOf)
+            validateRegExp("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}\$", email).map(::EmailAddress).mapLeft(::nonEmptyListOf)
 
         fun create(email: String): EmailAddress = validate(email)
             .fold(

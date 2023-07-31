@@ -52,8 +52,10 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlin_coroutines_version"
     testImplementation "io.kotest:kotest-runner-junit5:$kotest_version"
+    testImplementation "io.kotest.extensions:kotest-property-arbs:2.1.2"
     testImplementation "io.kotest:kotest-property:$kotest_version"
     testImplementation "io.kotest.extensions:kotest-assertions-arrow:1.3.3"
+    testImplementation "io.github.serpro69:kotlin-faker:1.14.0"
     testImplementation 'io.mockk:mockk:1.13.5'
 }
 
