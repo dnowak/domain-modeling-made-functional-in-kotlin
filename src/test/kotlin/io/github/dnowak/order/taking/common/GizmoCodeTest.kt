@@ -7,31 +7,36 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.string
+import io.kotest.property.assume
+import io.kotest.property.checkAll
 
 class GizmoCodeTest : FreeSpec({
     "GizmoCode" - {
-        val validCodes = listOf("G123", "G444", "G222")
-        val invalidCodes = listOf("", "G", "G1", "W123", "G1234", "G12345")
         "validate" - {
-            validCodes.forEach { code ->
-                "accepts <$code>" {
+            "accepts" {
+                Arb.gizmoCodeValue().checkAll { code ->
                     GizmoCode.validate(code).shouldBeRight().value shouldBe code
                 }
             }
-            invalidCodes.forEach { code ->
-                "rejects <$code>" {
-                    GizmoCode.validate(code).shouldBeLeft().all.shouldExist { error -> error.message.contains(code) }
+            "rejects" {
+                Arb.string().checkAll { code ->
+                    assume(invalidGizmoCodeValue(code))
+                    GizmoCode.validate(code)
+                        .shouldBeLeft().all.shouldExist { error -> error.message.contains("<$code>") }
                 }
             }
         }
         "create" - {
-            validCodes.forEach { code ->
-                "accepts <$code>" {
+            "accepts" {
+                Arb.gizmoCodeValue().checkAll { code ->
                     GizmoCode.create(code).value shouldBe code
                 }
             }
-            invalidCodes.forEach { code ->
-                "rejects <$code>" {
+            "rejects" {
+                Arb.string().checkAll { code ->
+                    assume(invalidGizmoCodeValue(code))
                     val exception = shouldThrow<ValidationException> {
                         GizmoCode.create(code)
                     }
@@ -39,11 +44,10 @@ class GizmoCodeTest : FreeSpec({
                 }
             }
         }
+        //TODO: is it needed?
         "equality" - {
-            validCodes.forEach { code ->
-                "checks <$code>" {
-                    GizmoCode.create(code) shouldBe GizmoCode.create(code)
-                }
+            Arb.gizmoCodeValue().checkAll { code ->
+                GizmoCode.create(code) shouldBe GizmoCode.create(code)
             }
         }
     }

@@ -114,7 +114,9 @@ value class OrderLineId private constructor(val value: String) {
 value class WidgetCode private constructor(val value: String) {
     companion object {
         fun validate(code: String): EitherNel<ValidationError, WidgetCode> =
-            validateRegExp("W\\d{4}", code).map(::WidgetCode).mapLeft(::nonEmptyListOf)
+            validateRegExp("W\\d{4}", code)
+                .map(::WidgetCode)
+                .mapLeft(::nonEmptyListOf)
 
         fun create(code: String): WidgetCode = validate(code)
             .fold(
@@ -380,7 +382,7 @@ fun validateRegExp(pattern: String, value: String): Either<ValidationError, Stri
     if (Regex(pattern).matches(value)) {
         Right(value)
     } else {
-        Left(ValidationError("'$value' must match the pattern '$pattern'"))
+        Left(ValidationError("<$value> must match the pattern <$pattern>"))
     }
 
 fun validateStringLength(min: Int, max: Int, value: String): Either<ValidationError, String> {
