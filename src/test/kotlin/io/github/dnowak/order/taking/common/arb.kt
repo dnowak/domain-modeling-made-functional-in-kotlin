@@ -31,3 +31,9 @@ fun Arb.Companion.priceValue(): Arb<BigDecimal> = Arb.bigDecimal(BigDecimal("0.0
 fun validPriceValue(value: BigDecimal): Boolean = value in BigDecimal("0.00")..BigDecimal("100.00")
 
 fun invalidPriceValue(value: BigDecimal): Boolean = !validPriceValue(value)
+
+fun Arb.Companion.billingAmountValue(): Arb<BigDecimal> = Arb.bigDecimal(BigDecimal("0.00"), BigDecimal("10000.00"))
+
+fun validBillingAmountValue(value: BigDecimal): Boolean = value in BigDecimal("0.00")..BigDecimal("10000.00")
+
+fun invalidBillingAmountValue(value: BigDecimal): Boolean = !validBillingAmountValue(value)

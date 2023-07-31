@@ -333,7 +333,9 @@ class Price private constructor(value: BigDecimal) : SimpleType<BigDecimal>(valu
 
 /// Constrained to be a decimal between 0.0 and 10000.00
 //type BillingAmount = private BillingAmount of decimal
-class BillingAmount private constructor(value: BigDecimal) : SimpleType<BigDecimal>(value) {
+//class BillingAmount private constructor(value: BigDecimal) : SimpleType<BigDecimal>(value) {
+@JvmInline
+value class BillingAmount(val value: BigDecimal) {
     companion object {
         private val min = BigDecimal("0.00")
         private val max = BigDecimal("10000.00")
@@ -343,8 +345,11 @@ class BillingAmount private constructor(value: BigDecimal) : SimpleType<BigDecim
                 .map(::BillingAmount).mapLeft(::nonEmptyListOf)
         }
 
-        fun create(amount: BigDecimal): BillingAmount =
-            validate(amount).getOrElse { throw ValidationException(amount.toString()) }
+        fun create(amount: BigDecimal): BillingAmount = validate(amount)
+            .fold(
+                { errors -> throw ValidationException("Invalid billing amount: <$amount> - errors: <${messages(errors)}>") },
+                ::identity
+            )
 
         fun create(amount: String): BillingAmount =
             create(BigDecimal(amount))
