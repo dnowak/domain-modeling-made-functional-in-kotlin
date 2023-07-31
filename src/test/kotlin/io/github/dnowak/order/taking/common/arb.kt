@@ -10,9 +10,17 @@ fun Arb.Companion.gizmoCodeValue(): Arb<String> = Arb.int(0..999).map { "G" + it
 
 fun Arb.Companion.gizmoCode(): Arb<GizmoCode> = gizmoCodeValue().map { GizmoCode.create(it) }
 
+fun validGizmoCodeValue(value: String): Boolean = value.length == 4 && value.startsWith("G") && value.drop(1).all { it.isDigit() }
+
+fun invalidGizmoCodeValue(value: String): Boolean = !validGizmoCodeValue(value)
+
 fun Arb.Companion.widgetCodeValue(): Arb<String> = Arb.int(0..9999).map { "W" + it.toString().padStart(4, '0') }
 
 fun Arb.Companion.widgetCode(): Arb<WidgetCode> = widgetCodeValue().map { WidgetCode.create(it) }
+
+fun validWidgetCodeValue(value: String): Boolean = value.length == 5 && value.startsWith("W") && value.drop(1).all { it.isDigit() }
+
+fun invalidWidgetCodeValue(value: String): Boolean = !validWidgetCodeValue(value)
 
 fun Arb.Companion.unitQuantityValue(): Arb<Int> = Arb.int(1..1000)
 
