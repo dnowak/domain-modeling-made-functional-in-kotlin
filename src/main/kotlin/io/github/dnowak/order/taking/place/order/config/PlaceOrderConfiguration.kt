@@ -7,7 +7,22 @@ import io.github.dnowak.order.taking.common.OrderLineId
 import io.github.dnowak.order.taking.common.OrderQuantity
 import io.github.dnowak.order.taking.common.ProductCode
 import io.github.dnowak.order.taking.place.order.PlaceOrder
-import io.github.dnowak.order.taking.place.order.implementation.*
+import io.github.dnowak.order.taking.place.order.implementation.AcknowledgeOrder
+import io.github.dnowak.order.taking.place.order.implementation.CheckProductCodeExists
+import io.github.dnowak.order.taking.place.order.implementation.GetProductPrice
+import io.github.dnowak.order.taking.place.order.implementation.PriceOrder
+import io.github.dnowak.order.taking.place.order.implementation.ValidateOrder
+import io.github.dnowak.order.taking.place.order.implementation.ValidateOrderLine
+import io.github.dnowak.order.taking.place.order.implementation.ValidateProductCode
+import io.github.dnowak.order.taking.place.order.implementation.checkProductCode
+import io.github.dnowak.order.taking.place.order.implementation.createEvents
+import io.github.dnowak.order.taking.place.order.implementation.placeOrder
+import io.github.dnowak.order.taking.place.order.implementation.priceOrder
+import io.github.dnowak.order.taking.place.order.implementation.priceOrderLine
+import io.github.dnowak.order.taking.place.order.implementation.validateAddress
+import io.github.dnowak.order.taking.place.order.implementation.validateCustomerInfo
+import io.github.dnowak.order.taking.place.order.implementation.validateOrder
+import io.github.dnowak.order.taking.place.order.implementation.validateOrderLine
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 

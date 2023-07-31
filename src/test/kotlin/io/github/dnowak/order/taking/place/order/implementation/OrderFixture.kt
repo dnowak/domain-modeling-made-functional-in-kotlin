@@ -47,17 +47,17 @@ object OrderFixture {
         zipCode = "72456"
     )
     val unvalidatedOrderLine1 = UnvalidatedOrderLine(
-        orderLineId = "line-1",
+        orderLineId = "LN1",
         productCode = "G134",
         quantity = BigDecimal("10.55")
     )
     val unvalidatedOrderLine2 = UnvalidatedOrderLine(
-        orderLineId = "line-2",
+        orderLineId = "LN2",
         productCode = "W1344",
         quantity = BigDecimal("124")
     )
     val unvalidatedOrder = UnvalidatedOrder(
-        orderId = "order-1",
+        orderId = "ORD1",
         customerInfo = unvalidatedCustomerInfo,
         shippingAddress = unvalidatedShippingAddress,
         billingAddress = unvalidatedBillingAddress,
@@ -87,17 +87,17 @@ object OrderFixture {
         zipCode = ZipCode.create("72456")
     )
     val validatedOrderLine1 = ValidatedOrderLine(
-        orderLineId = OrderLineId.create("line-1"),
+        orderLineId = OrderLineId.create("LN1"),
         productCode = ProductCode.Gizmo(GizmoCode.create("G134")),
         quantity = OrderQuantity.Kilogram(KilogramQuantity.create(BigDecimal("10.55")))
     )
     val validatedOrderLine2 = ValidatedOrderLine(
-        orderLineId = OrderLineId.create("line-2"),
+        orderLineId = OrderLineId.create("LN2"),
         productCode = ProductCode.Widget(WidgetCode.create("W1344")),
         quantity = OrderQuantity.Unit(UnitQuantity.create(124))
     )
     val validatedOrder = ValidatedOrder(
-        orderId = OrderId.create("order-1"),
+        orderId = OrderId.create("ORD1"),
         customerInfo = validatedCustomerInfo,
         shippingAddress = validatedShippingAddress,
         billingAddress = validatedBillingAddress,
@@ -107,21 +107,21 @@ object OrderFixture {
         )
     )
     val pricedOrderLine1 = PricedOrderLine(
-        orderLineId = OrderLineId.create("line-1"),
+        orderLineId = OrderLineId.create("LN1"),
         productCode = ProductCode.Gizmo(GizmoCode.create("G134")),
         quantity = OrderQuantity.Kilogram(KilogramQuantity.create("10.55")),
         //1.12 * 10.55 = 11.816
         linePrice = Price.create("11.82")
     )
     val pricedOrderLine2 = PricedOrderLine(
-        orderLineId = OrderLineId.create("line-2"),
+        orderLineId = OrderLineId.create("LN2"),
         productCode = ProductCode.Widget(WidgetCode.create("W1344")),
         quantity = OrderQuantity.Unit(UnitQuantity.create(124)),
         //3.71 * 124 = 460.04
         linePrice = Price.create("460.04")
     )
     val pricedOrder = PricedOrder(
-        orderId = OrderId.create("order-1"),
+        orderId = OrderId.create("ORD1"),
         customerInfo = validatedCustomerInfo,
         shippingAddress = validatedShippingAddress,
         billingAddress = validatedBillingAddress,

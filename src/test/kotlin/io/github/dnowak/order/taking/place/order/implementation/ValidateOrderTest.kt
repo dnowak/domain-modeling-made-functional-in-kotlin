@@ -1,7 +1,19 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
-import arrow.core.*
-import io.github.dnowak.order.taking.common.*
+import arrow.core.EitherNel
+import arrow.core.flatMap
+import arrow.core.left
+import arrow.core.nel
+import arrow.core.nonEmptyListOf
+import arrow.core.partially1
+import arrow.core.right
+import arrow.core.toEitherNel
+import io.github.dnowak.order.taking.common.OrderLineId
+import io.github.dnowak.order.taking.common.OrderQuantity
+import io.github.dnowak.order.taking.common.ProductCode
+import io.github.dnowak.order.taking.common.Property
+import io.github.dnowak.order.taking.common.PropertyValidationError
+import io.github.dnowak.order.taking.common.ValidationError
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.assertions.withClue

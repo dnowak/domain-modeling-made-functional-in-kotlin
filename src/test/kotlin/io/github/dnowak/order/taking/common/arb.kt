@@ -1,14 +1,16 @@
 package io.github.dnowak.order.taking.common
 
 import io.github.serpro69.kfaker.Faker
-import io.github.serpro69.kfaker.faker
 import io.github.serpro69.kfaker.fakerConfig
 import io.kotest.property.Arb
 import io.kotest.property.RandomSource
 import io.kotest.property.arbitrary.ArbitraryBuilder
+import io.kotest.property.arbitrary.Codepoint
+import io.kotest.property.arbitrary.alphanumeric
 import io.kotest.property.arbitrary.bigDecimal
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.map
+import io.kotest.property.arbitrary.string
 import java.math.BigDecimal
 
 fun Arb.Companion.gizmoCodeValue(): Arb<String> = Arb.int(0..999).map { "G" + it.toString().padStart(3, '0') }
@@ -39,3 +41,7 @@ fun Arb.Companion.faker(): Arb<Faker> =
     ArbitraryBuilder.create { rs -> Faker(fakerConfig { random = JavaRandomAdapter(rs) }) }.build()
 
 fun Arb.Companion.fakerEmailAddress(): Arb<String> = Arb.faker().map { it.internet.email() }
+
+fun Arb.Companion.orderIdValues(): Arb<String> = Arb.string(1..10, Codepoint.alphanumeric()).map { it.uppercase() }
+
+fun Arb.Companion.orderLineIdValues(): Arb<String> = Arb.string(1..10, Codepoint.alphanumeric()).map { it.uppercase() }

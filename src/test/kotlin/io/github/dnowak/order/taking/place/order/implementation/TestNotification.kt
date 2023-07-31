@@ -1,6 +1,5 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
-import arrow.core.curried
 import arrow.core.partially1
 import io.github.dnowak.order.taking.common.BillingAmount
 import io.github.dnowak.order.taking.place.order.BillableOrderPlaced
