@@ -13,7 +13,6 @@ import io.kotest.property.assume
 import io.kotest.property.checkAll
 
 class ProductCodeTest: FreeSpec({
-
     "ProductCode" - {
         "validate" - {
             "widget code" {

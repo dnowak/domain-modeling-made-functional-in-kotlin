@@ -7,42 +7,48 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.string
+import io.kotest.property.arbs.geo.zipcodes
+import io.kotest.property.assume
+import io.kotest.property.checkAll
 
 class ZipCodeTest : FreeSpec({
-    val validZipCodes = listOf("12345", "11223", "77766")
-    val invalidZipCodes = listOf("", " ", "1", "12", "123", "1234", "abcde", "ABCDE")
     "ZipCode" - {
         "validate" - {
-            validZipCodes.forEach { zip ->
-                "accepts <$zip>" {
-                    ZipCode.validate(zip).shouldBeRight().value shouldBe zip
+            "accepts" {
+                Arb.zipcodes().checkAll { zipcode ->
+                    ZipCode.validate(zipcode).shouldBeRight().value shouldBe zipcode
                 }
             }
-            invalidZipCodes.forEach { zip ->
-                "rejects <$zip>" {
-                    ZipCode.validate(zip).shouldBeLeft().all.shouldExist { error -> error.message.contains(zip) }
+            "rejects" {
+                Arb.string().checkAll { zipcode ->
+                    assume(invalidZipCodeValue(zipcode))
+                    ZipCode.validate(zipcode).shouldBeLeft().all.shouldExist { error -> error.message.contains(zipcode) }
                 }
             }
         }
         "create" - {
-            validZipCodes.forEach { zip ->
-                "accepts <$zip>" {
-                    ZipCode.create(zip).value shouldBe zip
+            "accepts" {
+                Arb.zipcodes().checkAll { zipcode ->
+                    ZipCode.create(zipcode).value shouldBe zipcode
                 }
             }
-            invalidZipCodes.forEach { zip ->
-                "rejects <$zip>" {
+            "rejects" {
+                Arb.string().checkAll { zipcode ->
+                    assume(invalidZipCodeValue(zipcode))
                     val exception = shouldThrow<ValidationException> {
-                        ZipCode.create(zip)
+                        ZipCode.create(zipcode)
                     }
-                    exception.message shouldContain "<$zip>"
+                    exception.message shouldContain zipcode
                 }
             }
         }
+        //TODO: is it necessary?
         "equality" - {
-            validZipCodes.forEach { zip ->
-                "checks <$zip>" {
-                    ZipCode.create(zip) shouldBe ZipCode.create(zip)
+            Arb.zipcodes().checkAll { zipcode ->
+                "checks <$zipcode>" {
+                    ZipCode.create(zipcode) shouldBe ZipCode.create(zipcode)
                 }
             }
         }

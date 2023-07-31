@@ -7,33 +7,36 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.string
+import io.kotest.property.assume
+import io.kotest.property.checkAll
 
-class EmailAddressTest: FreeSpec({
+class EmailAddressTest : FreeSpec({
     "EmailAddress" - {
-        val validEmailAddresses = listOf("me@company.com", "john@google.com")
-        val invalidEmailAddresses = listOf("", " ", "@", "me@", "@google.com")
         "validate" - {
-            validEmailAddresses.forEach { email ->
-                "accepts <$email>" {
+            "accepts" {
+                Arb.fakerEmailAddress().checkAll { email ->
                     EmailAddress.validate(email).shouldBeRight().value shouldBe email
                 }
             }
-            invalidEmailAddresses.forEach { email ->
-                "rejects <$email>" {
+            "rejects" {
+                Arb.string().checkAll { email ->
+                    assume(invalidEmailAddressValue(email))
                     EmailAddress.validate(email)
-                        .shouldBeLeft().all.shouldExist { error -> error.message.contains(email) }
+                        .shouldBeLeft().all.shouldExist { error -> error.message.contains("<$email>") }
                 }
             }
-
         }
         "create" - {
-            validEmailAddresses.forEach { email ->
-                "accepts <$email>" {
+            "accepts" {
+                Arb.fakerEmailAddress().checkAll { email ->
                     EmailAddress.create(email).value shouldBe email
                 }
             }
-            invalidEmailAddresses.forEach { email ->
-                "rejects <$email>" {
+            "rejects" {
+                Arb.string().checkAll { email ->
+                    assume(invalidEmailAddressValue(email))
                     val exception = shouldThrow<ValidationException> {
                         EmailAddress.create(email)
                     }
@@ -41,11 +44,10 @@ class EmailAddressTest: FreeSpec({
                 }
             }
         }
+        //TODO: is it necessary?
         "equality" - {
-            validEmailAddresses.forEach { email ->
-                "checks <$email>" {
-                    EmailAddress.create(email) shouldBe EmailAddress.create(email)
-                }
+            Arb.fakerEmailAddress().checkAll { email ->
+                EmailAddress.create(email) shouldBe EmailAddress.create(email)
             }
         }
     }
