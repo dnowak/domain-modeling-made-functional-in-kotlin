@@ -16,9 +16,10 @@ It is not 1 to 1 copy. I have changed the original in several areas:
 * implementation is based on [Arrow](https://arrow-kt.io/) - functional library for Kotlin
 * application assembly and REST endpoint is based on Spring Boot
 * data validation is based on arrow types
-* base type for simple types to support comparison and string representation
+* base type for simple types to support comparison and string representation -> replaced with value classes where possible
 * dropped *String50* type
 * dependencies - only immediate dependencies are provided instead of dependencies of dependencies
+* orderId and orderLineId are alphanumeric with capital letters only
 
 ## Original Code
 
@@ -42,7 +43,7 @@ Execute the following command in shell:
 curl --location --request POST 'http://localhost:8080/orders' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "orderId": "orderId",
+    "orderId": "ORD1",
     "customerInfo": {
         "firstName": "Jan",
         "lastName": "Kowalski",
@@ -61,12 +62,12 @@ curl --location --request POST 'http://localhost:8080/orders' \
     },
     "lines": [
         {
-            "orderLineId": "line-1",
+            "orderLineId": "LN1"
             "productCode": "W1234",
             "quantity": 10
         },
         {
-            "orderLineId": "line-2",
+            "orderLineId": "LN2",
             "productCode": "G123",
             "quantity": 0.75
         }
@@ -102,12 +103,12 @@ curl --location --request POST 'http://localhost:8080/orders' \
     },
     "lines": [
         {
-            "orderLineId": "line-1",
+            "orderLineId": "LN1",
             "productCode": "W1234",
             "quantity": 101111
         },
         {
-            "orderLineId": "line-2",
+            "orderLineId": "LN2",
             "productCode": "G123",
             "quantity": 0.001
         }

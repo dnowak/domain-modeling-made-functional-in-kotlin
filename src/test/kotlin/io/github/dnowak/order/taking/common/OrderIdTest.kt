@@ -7,31 +7,35 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldExist
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.string
+import io.kotest.property.assume
+import io.kotest.property.checkAll
 
 class OrderIdTest: FreeSpec({
     "OrderId" - {
-        val validIds = listOf("1", "A", "1234567890", "ABCDEFGHIJ")
-        val invalidIds = listOf("", "12345678901", "ABCDEFGHIJK")
         "validate" - {
-            validIds.forEach { id ->
-                "accepts <$id>" {
+            "accepts" - {
+                Arb.orderIdValues().checkAll { id ->
                     OrderId.validate(id).shouldBeRight().value shouldBe id
                 }
             }
-            invalidIds.forEach { id ->
-                "rejects <$id>" {
-                    OrderId.validate(id).shouldBeLeft().all.shouldExist { error -> error.message.contains(id) }
+           "rejects" - {
+                    Arb.string().checkAll { id ->
+                        assume(invalidOrderIdValue(id))
+                        OrderId.validate(id).shouldBeLeft().all.shouldExist { error -> error.message.contains("<$id>") }
+                    }
                 }
-            }
         }
         "create" - {
-            validIds.forEach { id ->
-                "accepts <$id>" {
+            "accepts" - {
+                Arb.orderIdValues().checkAll { id ->
                     OrderId.create(id).value shouldBe id
                 }
             }
-            invalidIds.forEach { id ->
-                "rejects <$id>" {
+            "rejects" - {
+                Arb.string().checkAll { id ->
+                    assume(invalidOrderIdValue(id))
                     val exception = shouldThrow<ValidationException> {
                         OrderId.create(id)
                     }
@@ -39,11 +43,10 @@ class OrderIdTest: FreeSpec({
                 }
             }
         }
+        //TODO: is it necessary?
         "equality" - {
-            validIds.forEach { id ->
-                "checks <$id>" {
-                    OrderId.create(id) shouldBe OrderId.create(id)
-                }
+            Arb.orderIdValues().checkAll {
+                OrderId.create(it) shouldBe OrderId.create(it)
             }
         }
     }

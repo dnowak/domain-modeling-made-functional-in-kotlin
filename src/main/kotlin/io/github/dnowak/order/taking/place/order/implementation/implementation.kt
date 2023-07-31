@@ -15,7 +15,6 @@ import arrow.core.right
 import arrow.core.some
 import arrow.core.toEitherNel
 import arrow.core.traverseEither
-import arrow.core.zip
 import io.github.dnowak.order.taking.common.Address
 import io.github.dnowak.order.taking.common.BillingAmount
 import io.github.dnowak.order.taking.common.City

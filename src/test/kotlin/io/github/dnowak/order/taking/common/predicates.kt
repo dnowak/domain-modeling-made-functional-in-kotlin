@@ -29,3 +29,11 @@ fun invalidKilogramQuantityValue(value: BigDecimal): Boolean = !validKilogramQua
 fun validBillingAmountValue(value: BigDecimal): Boolean = value in BigDecimal("0.00")..BigDecimal("10000.00")
 
 fun invalidBillingAmountValue(value: BigDecimal): Boolean = !validBillingAmountValue(value)
+
+fun validOrderIdValue(value: String) = value.length in 1..10 && value.all { it.isDigit() || it.isUpperCase()}
+
+fun invalidOrderIdValue(value: String) = !validOrderIdValue(value)
+
+fun validOrderLineIdValue(value: String) = value.length in 1..10 && value.all { it.isDigit() || it.isUpperCase()}
+
+fun invalidOrderLineIdValue(value: String) = !validOrderLineIdValue(value)

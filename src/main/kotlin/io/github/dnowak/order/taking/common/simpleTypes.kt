@@ -1,12 +1,12 @@
 package io.github.dnowak.order.taking.common
 
 import arrow.core.Either
+import arrow.core.Either.Companion.zipOrAccumulate
 import arrow.core.Either.Left
 import arrow.core.Either.Right
 import arrow.core.EitherNel
 import arrow.core.Nel
 import arrow.core.NonEmptyList
-import arrow.core.getOrElse
 import arrow.core.identity
 import arrow.core.left
 import arrow.core.nonEmptyListOf
@@ -27,7 +27,10 @@ private fun messages(errors: NonEmptyList<ValidationError>): String =
 value class EmailAddress private constructor(val value: String) {
     companion object {
         fun validate(email: String): EitherNel<ValidationError, EmailAddress> =
-            validateRegExp("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}\$", email).map(::EmailAddress).mapLeft(::nonEmptyListOf)
+            validateRegExp(
+                "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}\$",
+                email
+            ).map(::EmailAddress).mapLeft(::nonEmptyListOf)
 
         fun create(email: String): EmailAddress = validate(email)
             .fold(
@@ -81,7 +84,10 @@ abstract class SimpleType<T : Any> protected constructor(val value: T) {
 value class OrderId private constructor(val value: String) {
     companion object {
         fun validate(id: String): EitherNel<ValidationError, OrderId> =
-            validateStringLength(1, 10, id).map(::OrderId).mapLeft(::nonEmptyListOf)
+            zipOrAccumulate(
+                validateStringLength(1, 10, id),
+                validateAlphaUpperNumeric(id)
+            ) { _, _ -> OrderId(id) }
 
         fun create(id: String): OrderId = validate(id)
             .fold(
@@ -98,7 +104,10 @@ value class OrderId private constructor(val value: String) {
 value class OrderLineId private constructor(val value: String) {
     companion object {
         fun validate(id: String): EitherNel<ValidationError, OrderLineId> =
-            validateStringLength(1, 10, id).map(::OrderLineId).mapLeft(::nonEmptyListOf)
+            zipOrAccumulate(
+                validateStringLength(1, 10, id),
+                validateAlphaUpperNumeric(id)
+            ) { _, _ -> OrderLineId(id) }
 
         fun create(id: String): OrderLineId = validate(id)
             .fold(
@@ -393,6 +402,9 @@ fun validateStringLength(min: Int, max: Int, value: String): Either<ValidationEr
         Left(ValidationError("The length of <$value> should be between <$min> and <$max>"))
     }
 }
+
+fun validateAlphaUpperNumeric(value: String): Either<ValidationError, String> =
+    validateRegExp("^[A-Z0-9]*$", value)
 
 fun validateNullableStringLength(min: Int, max: Int, value: String?): Either<ValidationError, String?> {
     if (value == null) {
