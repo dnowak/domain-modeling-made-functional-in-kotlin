@@ -87,8 +87,8 @@ type AddressValidationError =
  */
 
 sealed interface AddressValidationError {
-    object InvalidFormat : AddressValidationError
-    object AddressNotFound : AddressValidationError
+    data object InvalidFormat : AddressValidationError
+    data object AddressNotFound : AddressValidationError
 }
 
 //type CheckedAddress = CheckedAddress of UnvalidatedAddress
@@ -197,8 +197,8 @@ typealias CreateOrderAcknowledgementLetter = (PricedOrder) -> HtmlString
 //type SendResult = Sent | NotSent
 
 sealed interface SendResult {
-    object Sent : SendResult
-    object NotSent : SendResult
+    data object Sent : SendResult
+    data object NotSent : SendResult
 }
 
 //type SendOrderAcknowledgment = OrderAcknowledgment -> SendResult
@@ -318,7 +318,7 @@ result {
 typealias ValidateAddress = (UnvalidatedAddress) -> EitherNel<PropertyValidationError, Address>
 
 fun validateAddress(address: CheckedAddress): EitherNel<PropertyValidationError, Address> {
-    val validatedAddresLine1 = validateString50(address.addressLine1)
+    val validatedAddressLine1 = validateString50(address.addressLine1)
         .assign(Property("addressLine1"))
     val validatedAddressLine2 = validateNullableString50(address.addressLine2)
         .assign(Property("addressLine2"))
@@ -332,7 +332,7 @@ fun validateAddress(address: CheckedAddress): EitherNel<PropertyValidationError,
         .assign(Property("zipCode"))
 
     return zipOrAccumulate(
-        validatedAddresLine1,
+        validatedAddressLine1,
         validatedAddressLine2,
         validatedAddressLine3,
         validatedAddressLine4,
@@ -574,14 +574,14 @@ result {
 
 typealias PriceOrderLine = (ValidatedOrderLine) -> Either<PricingError, PricedOrderLine>
 
-fun priceOrderLine(getProductPrice: GetProductPrice, line: ValidatedOrderLine): Either<PricingError, PricedOrderLine> =
-    either {
-        val price = getProductPrice(line.productCode)
-        val linePrice = (price * line.quantity).bind()
-        line.run {
-            PricedOrderLine(orderLineId, productCode, line.quantity, linePrice)
-        }
-    }
+fun priceOrderLine(
+    getProductPrice: GetProductPrice,
+    line: ValidatedOrderLine
+): Either<PricingError, PricedOrderLine> = either {
+    val price = getProductPrice(line.productCode)
+    val linePrice = (price * line.quantity).bind()
+    PricedOrderLine(line.orderLineId, line.productCode, line.quantity, linePrice)
+}
 
 private operator fun Price.times(quantity: OrderQuantity): Either<PricingError, Price> =
     Price.validate(value.multiply(quantity.quantity).setScale(2, RoundingMode.HALF_UP))
@@ -637,7 +637,7 @@ let acknowledgeOrder : AcknowledgeOrder =
             Letter = letter
             }
 
-        // if the acknowledgement was successfully sent,
+        // if the acknowledgment was successfully sent,
         // return the corresponding event, else return None
         match sendAcknowledgment acknowledgment with
         | Sent ->

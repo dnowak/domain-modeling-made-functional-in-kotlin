@@ -82,7 +82,7 @@ type UnvalidatedOrder = {
  */
 
 data class UnvalidatedOrder(
-    val orderId:String,
+    val orderId: String,
     val customerInfo: UnvalidatedCustomerInfo,
     val shippingAddress: UnvalidatedAddress,
     val billingAddress: UnvalidatedAddress,
@@ -173,10 +173,11 @@ type PlaceOrderEvent =
  */
 //TODO: Fix it - is it OK?
 sealed interface PlaceOrderEvent {
-    data class OrderPlaced(val payload: io.github.dnowak.order.taking.place.order.OrderPlaced): PlaceOrderEvent
-    data class BillableOrderPlaced(val payload: io.github.dnowak.order.taking.place.order.BillableOrderPlaced):
+    data class OrderPlaced(val payload: io.github.dnowak.order.taking.place.order.OrderPlaced) : PlaceOrderEvent
+    data class BillableOrderPlaced(val payload: io.github.dnowak.order.taking.place.order.BillableOrderPlaced) :
         PlaceOrderEvent
-    data class AcknowledgmentSent(val payload: OrderAcknowledgmentSent): PlaceOrderEvent
+
+    data class AcknowledgmentSent(val payload: OrderAcknowledgmentSent) : PlaceOrderEvent
 }
 
 // ------------------------------------
@@ -221,9 +222,9 @@ type PlaceOrderError =
  */
 
 sealed class PlaceOrderError {
-    data class Validation(val errors: Nel<PropertyValidationError>): PlaceOrderError()
-    data class Pricing(val error: PricingError): PlaceOrderError()
-    data class RemoteService(val error: RemoteServiceError): PlaceOrderError()
+    data class Validation(val errors: Nel<PropertyValidationError>) : PlaceOrderError()
+    data class Pricing(val error: PricingError) : PlaceOrderError()
+    data class RemoteService(val error: RemoteServiceError) : PlaceOrderError()
 }
 
 
