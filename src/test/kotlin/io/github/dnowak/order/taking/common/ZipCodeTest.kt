@@ -24,7 +24,8 @@ class ZipCodeTest : FreeSpec({
             "rejects" {
                 Arb.string().checkAll { zipcode ->
                     assume(invalidZipCodeValue(zipcode))
-                    ZipCode.validate(zipcode).shouldBeLeft().all.shouldExist { error -> error.message.contains(zipcode) }
+                    ZipCode.validate(zipcode)
+                        .shouldBeLeft().all.shouldExist { error -> error.message.contains(zipcode) }
                 }
             }
         }
@@ -47,9 +48,7 @@ class ZipCodeTest : FreeSpec({
         //TODO: is it necessary?
         "equality" - {
             Arb.zipcodes().checkAll { zipcode ->
-                "checks <$zipcode>" {
-                    ZipCode.create(zipcode) shouldBe ZipCode.create(zipcode)
-                }
+                ZipCode.create(zipcode) shouldBe ZipCode.create(zipcode)
             }
         }
     }
