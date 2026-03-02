@@ -1,16 +1,17 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
-import static kotlinx.kover.api.CoverageEngine.INTELLIJ
+//import static kotlinx.kover.api.CoverageEngine.INTELLIJ
 
 buildscript {
-    ext.kotlin_version = '1.9.10'
+    ext.kotlin_version = '2.3.10'
 }
 
 plugins {
+//    kotlin("jvm") version "$kotlin_version"
     id 'org.jetbrains.kotlin.jvm' version "$kotlin_version"
-    id 'org.springframework.boot' version '2.6.0'
+    id 'org.springframework.boot' version '4.0.3'
     id "org.jetbrains.kotlin.plugin.spring" version "$kotlin_version"
-    id 'org.jetbrains.kotlinx.kover' version '0.4.2'
+    id 'org.jetbrains.kotlinx.kover' version '0.9.7'
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -23,8 +24,8 @@ repositories {
 }
 
 ext {
-    kotest_version = '5.6.2'
-    kotlin_coroutines_version = '1.7.3'
+    kotest_version = '6.1.4'
+    kotlin_coroutines_version = '1.10.2'
 }
 
 dependencies {
@@ -38,10 +39,11 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$kotlin_coroutines_version"
 
 
-    implementation platform('io.arrow-kt:arrow-stack:1.2.0')
+    implementation platform('io.arrow-kt:arrow-stack:2.2.1.1')
     implementation 'io.arrow-kt:arrow-core'
+    implementation 'io.arrow-kt:arrow-functions-jvm:2.2.1.1'
     implementation 'io.arrow-kt:arrow-fx-coroutines'
-    implementation 'app.cash.quiver:lib:0.4.0'
+    implementation 'app.cash.quiver:lib:1.0.5'
 
     implementation 'io.github.microutils:kotlin-logging:2.0.11'
 
@@ -65,13 +67,20 @@ test {
     useJUnit()
 }
 
+kotlin {
+    jvmToolchain(25)
+}
+
+/*
 compileKotlin {
-    kotlinOptions.jvmTarget = '17'
+    kotlinOptions.jvmTarget = '25'
 }
 
 compileTestKotlin {
-    kotlinOptions.jvmTarget = '17'
+    kotlinOptions.jvmTarget = '25'
 }
+
+ */
 
 tasks.test {
     kover {
@@ -102,11 +111,13 @@ test {
     }
 }
 
+/*
 kover {
     enabled = true                          // false to disable instrumentation of all test tasks in all modules
     coverageEngine.set(INTELLIJ) // change instrumentation agent and reporter
     generateReportOnCheck.set(true)         // false to do not execute `koverReport` task before `check` task
 }
+*/
 
 /*
 tasks.koverVerify {

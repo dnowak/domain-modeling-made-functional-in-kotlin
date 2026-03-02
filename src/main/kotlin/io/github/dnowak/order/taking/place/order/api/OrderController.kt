@@ -1,6 +1,6 @@
 package io.github.dnowak.order.taking.place.order.api
 
-import arrow.core.traverseEither
+import app.cash.quiver.extensions.traverseEither
 import io.github.dnowak.order.taking.common.OrderId
 import io.github.dnowak.order.taking.common.ValidationError
 import io.github.dnowak.order.taking.event.PublishEvent

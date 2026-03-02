@@ -1,5 +1,6 @@
 package io.github.dnowak.order.taking.place.order.implementation
 
+import app.cash.quiver.extensions.traverseEither
 import arrow.core.Either
 import arrow.core.Either.Companion.zipOrAccumulate
 import arrow.core.EitherNel
@@ -14,7 +15,6 @@ import arrow.core.raise.either
 import arrow.core.right
 import arrow.core.some
 import arrow.core.toEitherNel
-import arrow.core.traverseEither
 import io.github.dnowak.order.taking.common.Address
 import io.github.dnowak.order.taking.common.BillingAmount
 import io.github.dnowak.order.taking.common.City
