@@ -7,6 +7,7 @@ buildscript {
 }
 
 plugins {
+//    kotlin("jvm") version "$kotlin_version"
     id 'org.jetbrains.kotlin.jvm' version "$kotlin_version"
     id 'org.springframework.boot' version '4.0.3'
     id "org.jetbrains.kotlin.plugin.spring" version "$kotlin_version"
@@ -66,13 +67,20 @@ test {
     useJUnit()
 }
 
+kotlin {
+    jvmToolchain(25)
+}
+
+/*
 compileKotlin {
-    kotlinOptions.jvmTarget = '21'
+    kotlinOptions.jvmTarget = '25'
 }
 
 compileTestKotlin {
-    kotlinOptions.jvmTarget = '21'
+    kotlinOptions.jvmTarget = '25'
 }
+
+ */
 
 tasks.test {
     kover {
